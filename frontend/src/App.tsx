@@ -12,6 +12,15 @@ import { DashboardPage } from "./features/dashboard/pages/DashboardPage";
 import { TramitesPage } from "./features/tramites/pages/TramitesPage";
 import { NewTramitePage } from "./features/tramites/pages/NewTramitePage";
 import { TramiteDetailPage } from "./features/tramites/pages/TramiteDetailPage";
+import { DocumentsPage } from "./features/documentos/pages/DocumentsPage";
+import { DocumentDetailPage } from "./features/documentos/pages/DocumentDetailPage";
+import { MachineLearningPage } from "./features/machine-learning/pages/MachineLearningPage";
+import { JobsPage } from "./features/rrhh/pages/JobsPage";
+import { JobDetailPage } from "./features/rrhh/pages/JobDetailPage";
+import { CreateJobPage } from "./features/rrhh/pages/CreateJobPage";
+import { EditJobPage } from "./features/rrhh/pages/EditJobPage";
+import { CurriculumsPage } from "./features/curriculos/pages/CurriculumsPage";
+import { CurriculumDetailPage } from "./features/curriculos/pages/CurriculumDetailPage";
 
 const queryClient = new QueryClient();
 
@@ -32,7 +41,18 @@ function AnimatedRoutes() {
           <Route path="/tramites/nuevo" element={<NewTramitePage />} />
           <Route path="/tramites/:id" element={<TramiteDetailPage />} />
 
-          <Route path="/documentos" element={<DashboardPage />} />
+          <Route path="/documentos" element={<DocumentsPage />} />
+          <Route path="/documentos/:id" element={<DocumentDetailPage />} />
+
+          <Route path="/machine-learning" element={<MachineLearningPage />} />
+
+          <Route path="/convocatorias" element={<JobsPage />} />
+          <Route path="/convocatorias/nueva" element={<CreateJobPage />} />
+          <Route path="/convocatorias/:id" element={<JobDetailPage />} />
+          <Route path="/convocatorias/:id/editar" element={<EditJobPage />} />
+
+          <Route path="/curriculos" element={<CurriculumsPage />} />
+          <Route path="/curriculos/:id" element={<CurriculumDetailPage />} />
         </Route>
       </Routes>
     </AnimatePresence>
