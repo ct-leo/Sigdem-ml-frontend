@@ -11,7 +11,6 @@ import {
   Award, 
   UserCog, 
   PieChart, 
-  Settings,
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
@@ -29,7 +28,6 @@ const MENU_ITEMS = [
   { path: "/rankings", label: "Rankings", icon: Award },
   { path: "/usuarios", label: "Usuarios", icon: UserCog },
   { path: "/reportes", label: "Reportes", icon: PieChart },
-  { path: "/configuracion", label: "Configuración", icon: Settings },
 ];
 
 export const Sidebar: React.FC = () => {

@@ -2,7 +2,6 @@ import React from "react";
 import { Search } from "lucide-react";
 import { Breadcrumbs } from "./Breadcrumbs";
 import { NotificationMenu } from "./NotificationMenu";
-import { ThemeSwitcher } from "./ThemeSwitcher";
 import { UserMenu } from "./UserMenu";
 
 export const Header: React.FC = () => {
@@ -23,7 +22,6 @@ export const Header: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-3">
-        <ThemeSwitcher />
         <NotificationMenu />
         <div className="w-px h-6 bg-border-color mx-2"></div>
         <UserMenu />
