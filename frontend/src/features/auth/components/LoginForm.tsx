@@ -47,7 +47,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
               <input
                 {...field}
                 type="email"
-                placeholder="Correo institucional"
+                placeholder="Correo"
                 disabled={loading}
                 className={`w-full h-[52px] pl-12 pr-4 rounded-2xl border text-text-primary placeholder-text-secondary bg-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 disabled:opacity-50 disabled:cursor-not-allowed ${
                   errors.email
