@@ -1,18 +1,30 @@
 import React from "react";
-import type { User } from "../types/user.types";
+import type { LegacyUser } from "../types/user.types";
 import { Card, CardContent } from "../../../components/ui/Card";
 import { ShieldCheck, Key } from "lucide-react";
 import { useUpdateUserPermissions } from "../hooks/useUpdateUser";
-import { toast } from "sonner";
+import { alerts } from "../../../utils/sweetalert";
 
 interface UserPermissionsCardProps {
-  user: User;
+  user: LegacyUser;
 }
 
 export const UserPermissionsCard: React.FC<UserPermissionsCardProps> = ({ user }) => {
   const updatePermissionsMutation = useUpdateUserPermissions();
 
   const handleTogglePermission = async (permId: string) => {
+    const targetPerm = user.permissions.find(p => p.id === permId);
+    if (!targetPerm) return;
+
+    const actionText = targetPerm.assigned ? "quitar" : "conceder";
+    const result = await alerts.confirmAction(
+      "Modificar Permiso",
+      `¿Está seguro de ${actionText} el permiso "${targetPerm.name}" para este usuario?`,
+      "Confirmar",
+      "Cancelar"
+    );
+    if (!result.isConfirmed) return;
+
     const updatedPermissions = user.permissions.map((p) => {
       if (p.id === permId) {
         return { ...p, assigned: !p.assigned };
@@ -25,9 +37,9 @@ export const UserPermissionsCard: React.FC<UserPermissionsCardProps> = ({ user }
         id: user.id,
         permissions: updatedPermissions,
       });
-      toast.success("Permisos del usuario actualizados");
+      await alerts.success("Permisos Actualizados", "Los privilegios RBAC del usuario se han modificado.");
     } catch {
-      toast.error("Error al actualizar los permisos del usuario");
+      alerts.error("Error", "Error al actualizar los permisos del usuario");
     }
   };
 

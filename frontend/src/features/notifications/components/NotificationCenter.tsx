@@ -9,6 +9,7 @@ import { CheckCheck, Trash2 } from "lucide-react";
 import { Button } from "../../../components/ui/Button";
 import { AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { alerts } from "../../../utils/sweetalert";
 
 export const NotificationCenter: React.FC = () => {
   const { notifications, markAllAsRead, clearNotifications } = useNotifications();
@@ -37,8 +38,12 @@ export const NotificationCenter: React.FC = () => {
     toast.success("Se marcaron todos los avisos como leídos.");
   };
 
-  const handleClearAll = () => {
-    if (window.confirm("¿Está seguro que desea vaciar permanentemente todas sus notificaciones?")) {
+  const handleClearAll = async () => {
+    const result = await alerts.confirmDelete(
+      "¿Vaciar Historial?",
+      "¿Está seguro que desea eliminar permanentemente todas sus notificaciones? Esta acción no se puede deshacer."
+    );
+    if (result.isConfirmed) {
       clearNotifications();
       toast.success("Historial de notificaciones vaciado.");
     }

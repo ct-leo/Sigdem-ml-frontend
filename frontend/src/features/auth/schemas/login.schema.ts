@@ -1,13 +1,8 @@
 import { z } from "zod";
 
 export const loginSchema = z.object({
-  email: z.string().min(1, "El correo es obligatorio").email("Correo electrónico inválido"),
-  password: z.string().min(1, "La contraseña es obligatoria"),
-  remember: z.boolean().optional(),
+  correo: z.string().email("Correo electrónico inválido"),
+  password: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
 });
 
-export interface LoginFormValues {
-  email: string;
-  password: string;
-  remember?: boolean;
-}
+export type LoginSchemaInput = z.infer<typeof loginSchema>;

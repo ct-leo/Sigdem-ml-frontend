@@ -1,10 +1,10 @@
 import React from "react";
-import type { User } from "../types/user.types";
+import type { LegacyUser } from "../types/user.types";
 import { Card, CardContent } from "../../../components/ui/Card";
-import { Mail, Phone, Building, Briefcase, Calendar, ShieldCheck } from "lucide-react";
+import { Mail, Phone, Briefcase, Calendar, ShieldCheck } from "lucide-react";
 
 interface UserInfoCardProps {
-  user: User;
+  user: LegacyUser;
 }
 
 export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user }) => {
@@ -39,16 +39,7 @@ export const UserInfoCard: React.FC<UserInfoCardProps> = ({ user }) => {
 
           <hr className="border-border-color" />
 
-          {/* Area */}
-          <div className="flex items-center gap-3">
-            <Building className="w-4 h-4 text-[#7DAA74] shrink-0" />
-            <div className="flex flex-col gap-0.5">
-              <span className="text-[10px] uppercase font-black tracking-wider text-text-secondary">Área Asignada</span>
-              <span>{user.area}</span>
-            </div>
-          </div>
 
-          <hr className="border-border-color" />
 
           {/* Position */}
           <div className="flex items-center gap-3">

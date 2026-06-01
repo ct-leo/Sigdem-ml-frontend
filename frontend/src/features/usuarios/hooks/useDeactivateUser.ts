@@ -4,26 +4,26 @@ import { USERS_KEYS } from "../types/user.types";
 import { useNotificationStore } from "../../../stores/notifications/notificationStore";
 import { toast } from "sonner";
 
-export const useDeleteUser = () => {
+export const useDeactivateUser = () => {
   const queryClient = useQueryClient();
   const addNotification = useNotificationStore((state) => state.addNotification);
 
   return useMutation({
-    mutationFn: (id: number | string) => usersService.deleteUser(Number(id)),
-    onSuccess: (_, id) => {
+    mutationFn: (id: number | string) => usersService.deactivateUser(Number(id)),
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: USERS_KEYS.all });
-      toast.error("Usuario eliminado");
+      toast.warning("Usuario desactivado");
       addNotification(
-        "Usuario Eliminado",
-        `La cuenta del funcionario con ID ${id} ha sido eliminada permanentemente del sistema.`,
+        "Usuario Desactivado",
+        `La cuenta de ${data.nombre} ha sido suspendida temporalmente.`,
         "warning",
         "Sistema",
         "/usuarios"
       );
     },
     onError: (error: any) => {
-      console.error("Error deleting user:", error);
-      const detail = error.response?.data?.detail || error.response?.data?.message || "Error al eliminar el usuario";
+      console.error("Error deactivating user:", error);
+      const detail = error.response?.data?.detail || error.response?.data?.message || "Error al desactivar el usuario";
       toast.error(detail);
     },
   });

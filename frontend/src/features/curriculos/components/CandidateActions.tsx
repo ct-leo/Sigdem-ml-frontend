@@ -3,6 +3,7 @@ import { MoreHorizontal, Download, CheckCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useUpdateCurriculumStatus } from "../hooks/useCurriculums";
 import { toast } from "sonner";
+import { alerts } from "../../../utils/sweetalert";
 import type { Curriculum, CandidateStatus } from "../types/curriculum.types";
 
 interface CandidateActionsProps {
@@ -30,7 +31,7 @@ export const CandidateActions: React.FC<CandidateActionsProps> = ({ cv }) => {
     toast.success(`Descargando CV de: ${cv.candidateName} (Formato PDF)`);
   };
 
-  const handleToggleStatus = () => {
+  const handleToggleStatus = async () => {
     setIsOpen(false);
     const statusesCycle: Record<CandidateStatus, CandidateStatus> = {
       Pendiente: "En Revisión",
@@ -40,17 +41,24 @@ export const CandidateActions: React.FC<CandidateActionsProps> = ({ cv }) => {
       Descartado: "Pendiente",
     };
     const nextStatus = statusesCycle[cv.status] || "Pendiente";
-    toast.promise(
-      updateStatusMutation.mutateAsync({
+
+    const result = await alerts.confirmAction(
+      "Cambiar Estado",
+      `¿Desea cambiar el estado del candidato a "${nextStatus}"?`,
+      "Cambiar",
+      "Cancelar"
+    );
+    if (!result.isConfirmed) return;
+
+    try {
+      await updateStatusMutation.mutateAsync({
         id: cv.id,
         status: nextStatus,
-      }),
-      {
-        loading: "Actualizando estado...",
-        success: `Candidato actualizado a: ${nextStatus}`,
-        error: "Error al cambiar estado",
-      }
-    );
+      });
+      await alerts.success("Estado Actualizado", `El candidato ha sido actualizado a: ${nextStatus}`);
+    } catch {
+      alerts.error("Error", "Error al cambiar el estado del candidato");
+    }
   };
 
   return (

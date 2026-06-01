@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useDeleteJob, useUpdateJob } from "../hooks/useUpdateJob";
 import { useCreateJob } from "../hooks/useCreateJob";
-import { toast } from "sonner";
+import { alerts } from "../../../utils/sweetalert";
 import type { Job } from "../types/job.types";
 
 interface JobActionsProps {
@@ -30,17 +30,32 @@ export const JobActions: React.FC<JobActionsProps> = ({ job }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setIsOpen(false);
-    toast.promise(deleteMutation.mutateAsync(job.id), {
-      loading: "Eliminando convocatoria...",
-      success: "Convocatoria eliminada correctamente",
-      error: "Error al eliminar la convocatoria",
-    });
+    const result = await alerts.confirmDelete(
+      "¿Eliminar Convocatoria?",
+      `¿Está seguro que desea eliminar permanentemente la convocatoria "${job.title}"? Esta acción es irreversible.`
+    );
+    if (!result.isConfirmed) return;
+
+    try {
+      await deleteMutation.mutateAsync(job.id);
+      await alerts.success("Convocatoria Eliminada", "La oferta de empleo ha sido removida del sistema.");
+    } catch {
+      alerts.error("Error", "Error al eliminar la convocatoria");
+    }
   };
 
-  const handleDuplicate = () => {
+  const handleDuplicate = async () => {
     setIsOpen(false);
+    const result = await alerts.confirmAction(
+      "Duplicar Convocatoria",
+      `¿Desea crear una copia en borrador de "${job.title}"?`,
+      "Duplicar",
+      "Cancelar"
+    );
+    if (!result.isConfirmed) return;
+
     const duplicateDto = {
       title: `${job.title} (Copia)`,
       area: job.area,
@@ -54,14 +69,16 @@ export const JobActions: React.FC<JobActionsProps> = ({ job }) => {
       closedAt: job.closedAt.substring(0, 10),
       status: "Borrador" as const,
     };
-    toast.promise(duplicateMutation.mutateAsync(duplicateDto), {
-      loading: "Duplicando convocatoria...",
-      success: "Convocatoria duplicada en Borrador",
-      error: "Error al duplicar",
-    });
+
+    try {
+      await duplicateMutation.mutateAsync(duplicateDto);
+      await alerts.success("Convocatoria Duplicada", "Se ha creado una copia en estado Borrador exitosamente.");
+    } catch {
+      alerts.error("Error", "Error al duplicar la convocatoria");
+    }
   };
 
-  const handleToggleStatus = () => {
+  const handleToggleStatus = async () => {
     setIsOpen(false);
     const nextStatuses: Record<string, "Activa" | "Pausada" | "Cerrada" | "Borrador"> = {
       Borrador: "Activa",
@@ -71,17 +88,24 @@ export const JobActions: React.FC<JobActionsProps> = ({ job }) => {
       Finalizada: "Activa",
     };
     const nextStatus = nextStatuses[job.status] || "Activa";
-    toast.promise(
-      updateMutation.mutateAsync({
+
+    const result = await alerts.confirmAction(
+      "Cambiar Estado",
+      `¿Desea cambiar el estado de la convocatoria a ${nextStatus}?`,
+      "Cambiar",
+      "Cancelar"
+    );
+    if (!result.isConfirmed) return;
+
+    try {
+      await updateMutation.mutateAsync({
         id: job.id,
         status: nextStatus,
-      }),
-      {
-        loading: "Actualizando estado...",
-        success: `Convocatoria actualizada a: ${nextStatus}`,
-        error: "Error al cambiar estado",
-      }
-    );
+      });
+      await alerts.success("Estado Actualizado", `El estado ha cambiado a ${nextStatus} correctamente.`);
+    } catch {
+      alerts.error("Error", "Error al cambiar el estado");
+    }
   };
 
   return (

@@ -4,7 +4,7 @@ import { zodResolver as resolver } from "@hookform/resolvers/zod";
 import { userSchema } from "../schemas/user.schema";
 import type { UserSchemaInput } from "../schemas/user.schema";
 import { Button } from "../../../components/ui/Button";
-import { User, Mail, Phone, Briefcase, Building, Lock, ShieldCheck, CheckCircle } from "lucide-react";
+import { User, Mail, Phone, Briefcase, Lock, ShieldCheck, CheckCircle } from "lucide-react";
 
 interface UserFormProps {
   initialValues?: Partial<UserSchemaInput>;
@@ -13,22 +13,10 @@ interface UserFormProps {
   isEditMode?: boolean;
 }
 
-const AREAS = [
-  "Administración",
-  "Tesorería",
-  "Recursos Humanos",
-  "Obras",
-  "Tecnologías de Información",
-  "Defensa Civil",
-  "Fiscalización",
-  "Secretaría General"
-];
-
 const ROLES = [
-  "Administrador",
-  "Supervisor",
-  "Analista",
-  "Operador",
+  "ADMIN",
+  "RECEPCIONISTA",
+  "ANALISTA",
   "RRHH"
 ];
 
@@ -54,11 +42,10 @@ export const UserForm: React.FC<UserFormProps> = ({
     defaultValues: {
       fullName: initialValues?.fullName || "",
       email: initialValues?.email || "",
-      role: initialValues?.role || "Operador",
+      role: initialValues?.role || "RECEPCIONISTA",
       status: initialValues?.status || "Activo",
       phone: initialValues?.phone || "",
       position: initialValues?.position || "",
-      area: initialValues?.area || "Administración",
       password: "",
       confirmPassword: ""
     },
@@ -135,24 +122,7 @@ export const UserForm: React.FC<UserFormProps> = ({
           )}
         </div>
 
-        {/* Area */}
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-text-primary flex items-center gap-1">
-            <Building className="w-3.5 h-3.5 text-[#7DAA74]" />
-            Área Municipal
-          </label>
-          <select
-            {...register("area")}
-            className="border border-border-color rounded-lg px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-navy-blue text-text-primary bg-white"
-          >
-            {AREAS.map(a => (
-              <option key={a} value={a}>{a}</option>
-            ))}
-          </select>
-          {errors.area && (
-            <span className="text-[10px] font-bold text-danger">{errors.area.message}</span>
-          )}
-        </div>
+
 
         {/* Role */}
         <div className="flex flex-col gap-1.5">

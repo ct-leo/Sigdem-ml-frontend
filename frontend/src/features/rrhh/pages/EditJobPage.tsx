@@ -7,7 +7,7 @@ import type { JobFormData } from "../schemas/job.schema";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { Button } from "../../../components/ui/Button";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
-import { toast } from "sonner";
+import { alerts } from "../../../utils/sweetalert";
 
 export const EditJobPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,25 +16,23 @@ export const EditJobPage: React.FC = () => {
   const updateMutation = useUpdateJob();
 
   const handleFormSubmit = async (data: JobFormData) => {
-    toast.promise(
-      updateMutation.mutateAsync({
-        id: id || "",
-        ...data,
-      }),
-      {
-        loading: "Actualizando convocatoria...",
-        success: "Convocatoria actualizada con éxito",
-        error: "Error al actualizar la convocatoria",
-      }
+    const result = await alerts.confirmAction(
+      "Guardar Cambios",
+      "¿Desea guardar los cambios en esta convocatoria?",
+      "Guardar",
+      "Cancelar"
     );
+    if (!result.isConfirmed) return;
+
     try {
       await updateMutation.mutateAsync({
         id: id || "",
         ...data,
       });
+      await alerts.success("Cambios Guardados", "La convocatoria laboral ha sido actualizada correctamente.");
       navigate(`/convocatorias/${id}`);
-    } catch {
-      // toast prints error
+    } catch (err: any) {
+      alerts.error("Error", err.message || "Error al actualizar la convocatoria");
     }
   };
 

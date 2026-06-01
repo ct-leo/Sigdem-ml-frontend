@@ -1,10 +1,10 @@
 import React from "react";
-import type { User } from "../types/user.types";
+import type { LegacyUser } from "../types/user.types";
 import { Card, CardContent } from "../../../components/ui/Card";
 import { Activity, Clock } from "lucide-react";
 
 interface UserActivityCardProps {
-  user: User;
+  user: LegacyUser;
 }
 
 export const UserActivityCard: React.FC<UserActivityCardProps> = ({ user }) => {

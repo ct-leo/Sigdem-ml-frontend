@@ -34,6 +34,8 @@ import { RRHHReportPage } from "./features/reportes/pages/RRHHReportPage";
 import { ProductivityReportPage } from "./features/reportes/pages/ProductivityReportPage";
 import { AIReportPage } from "./features/reportes/pages/AIReportPage";
 import { NotificationCenterPage } from "./features/notifications/pages/NotificationCenterPage";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
+import { PublicRoute } from "./routes/PublicRoute";
 
 const queryClient = new QueryClient();
 
@@ -45,43 +47,49 @@ function AnimatedRoutes() {
   return (
     <AnimatePresence mode="wait">
       <Routes location={location} key={rootKey}>
-        <Route path="/" element={<LoginPage />} />
+        {/* Public Routes */}
+        <Route element={<PublicRoute />}>
+          <Route path="/" element={<LoginPage />} />
+        </Route>
 
-        <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<MainLayout />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
 
-          <Route path="/tramites" element={<TramitesPage />} />
-          <Route path="/tramites/nuevo" element={<NewTramitePage />} />
-          <Route path="/tramites/:id" element={<TramiteDetailPage />} />
+            <Route path="/tramites" element={<TramitesPage />} />
+            <Route path="/tramites/nuevo" element={<NewTramitePage />} />
+            <Route path="/tramites/:id" element={<TramiteDetailPage />} />
 
-          <Route path="/documentos" element={<DocumentsPage />} />
-          <Route path="/documentos/:id" element={<DocumentDetailPage />} />
+            <Route path="/documentos" element={<DocumentsPage />} />
+            <Route path="/documentos/:id" element={<DocumentDetailPage />} />
 
-          <Route path="/machine-learning" element={<MachineLearningPage />} />
+            <Route path="/machine-learning" element={<MachineLearningPage />} />
 
-          <Route path="/convocatorias" element={<JobsPage />} />
-          <Route path="/convocatorias/nueva" element={<CreateJobPage />} />
-          <Route path="/convocatorias/:id" element={<JobDetailPage />} />
-          <Route path="/convocatorias/:id/editar" element={<EditJobPage />} />
+            <Route path="/convocatorias" element={<JobsPage />} />
+            <Route path="/convocatorias/nueva" element={<CreateJobPage />} />
+            <Route path="/convocatorias/:id" element={<JobDetailPage />} />
+            <Route path="/convocatorias/:id/editar" element={<EditJobPage />} />
 
-          <Route path="/curriculos" element={<CurriculumsPage />} />
-          <Route path="/curriculos/:id" element={<CurriculumDetailPage />} />
+            <Route path="/curriculos" element={<CurriculumsPage />} />
+            <Route path="/curriculos/:id" element={<CurriculumDetailPage />} />
 
-          <Route path="/rankings" element={<RankingsPage />} />
-          <Route path="/rankings/:id" element={<CandidateRankingDetailPage />} />
+            <Route path="/rankings" element={<RankingsPage />} />
+            <Route path="/rankings/:id" element={<CandidateRankingDetailPage />} />
 
-          <Route path="/usuarios" element={<UsersPage />} />
-          <Route path="/usuarios/nuevo" element={<CreateUserPage />} />
-          <Route path="/usuarios/:id" element={<UserDetailPage />} />
-          <Route path="/usuarios/:id/editar" element={<EditUserPage />} />
+            <Route path="/usuarios" element={<UsersPage />} />
+            <Route path="/usuarios/nuevo" element={<CreateUserPage />} />
+            <Route path="/usuarios/:id" element={<UserDetailPage />} />
+            <Route path="/usuarios/:id/editar" element={<EditUserPage />} />
 
-          <Route path="/reportes" element={<ReportsPage />} />
-          <Route path="/reportes/tramites" element={<TramitesReportPage />} />
-          <Route path="/reportes/rrhh" element={<RRHHReportPage />} />
-          <Route path="/reportes/productividad" element={<ProductivityReportPage />} />
-          <Route path="/reportes/inteligencia-artificial" element={<AIReportPage />} />
-          <Route path="/notificaciones" element={<NotificationCenterPage />} />
-          <Route path="/mi-perfil" element={<MyProfilePage />} />
+            <Route path="/reportes" element={<ReportsPage />} />
+            <Route path="/reportes/tramites" element={<TramitesReportPage />} />
+            <Route path="/reportes/rrhh" element={<RRHHReportPage />} />
+            <Route path="/reportes/productividad" element={<ProductivityReportPage />} />
+            <Route path="/reportes/inteligencia-artificial" element={<AIReportPage />} />
+            <Route path="/notificaciones" element={<NotificationCenterPage />} />
+            <Route path="/mi-perfil" element={<MyProfilePage />} />
+          </Route>
         </Route>
       </Routes>
     </AnimatePresence>

@@ -1,11 +1,11 @@
 import React from "react";
-import type { User } from "../types/user.types";
+import type { LegacyUser } from "../types/user.types";
 import { UserRoleBadge } from "./UserRoleBadge";
 import { UserStatusBadge } from "./UserStatusBadge";
-import { Building, Briefcase, Mail } from "lucide-react";
+import { Briefcase, Mail } from "lucide-react";
 
 interface UserProfileHeaderProps {
-  user: User;
+  user: LegacyUser;
 }
 
 export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ user }) => {
@@ -40,10 +40,6 @@ export const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ user }) =>
           <span className="flex items-center gap-1.5 justify-center md:justify-start">
             <Briefcase className="w-4 h-4 text-navy-blue" />
             {user.position}
-          </span>
-          <span className="flex items-center gap-1.5 justify-center md:justify-start">
-            <Building className="w-4 h-4 text-[#7DAA74]" />
-            {user.area}
           </span>
           <span className="flex items-center gap-1.5 justify-center md:justify-start">
             <Mail className="w-4 h-4 text-[#7DAA74]" />

@@ -3,12 +3,14 @@ import { User, LogOut, ChevronDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../stores/hooks/useUser";
+import { useLogout } from "../../features/auth/hooks/useLogout";
 
 export const UserMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
   const user = useUser();
+  const logoutMutation = useLogout();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -21,8 +23,7 @@ export const UserMenu: React.FC = () => {
   }, []);
 
   const handleLogout = () => {
-    // Implement logout logic here
-    navigate("/");
+    logoutMutation.mutate();
   };
 
   const getInitials = (name: string | null) => {

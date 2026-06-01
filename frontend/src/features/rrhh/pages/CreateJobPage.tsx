@@ -6,24 +6,27 @@ import type { JobFormData } from "../schemas/job.schema";
 import { Button } from "../../../components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
+import { alerts } from "../../../utils/sweetalert";
 
 export const CreateJobPage: React.FC = () => {
   const navigate = useNavigate();
   const createMutation = useCreateJob();
 
   const handleFormSubmit = async (data: JobFormData) => {
-    toast.promise(createMutation.mutateAsync(data), {
-      loading: "Creando convocatoria laboral...",
-      success: "Convocatoria creada con éxito",
-      error: "Error al registrar la convocatoria",
-    });
-    // Redirect on success
+    const result = await alerts.confirmAction(
+      "Confirmar Convocatoria",
+      "¿Desea registrar esta nueva convocatoria laboral?",
+      "Registrar",
+      "Cancelar"
+    );
+    if (!result.isConfirmed) return;
+
     try {
       await createMutation.mutateAsync(data);
+      await alerts.success("Convocatoria Creada", "La oferta de empleo ha sido registrada correctamente.");
       navigate("/convocatorias");
-    } catch {
-      // toast prints error
+    } catch (err: any) {
+      alerts.error("Error", err.message || "Error al registrar la convocatoria");
     }
   };
 

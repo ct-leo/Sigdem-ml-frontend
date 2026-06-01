@@ -3,7 +3,7 @@ import { PageHeader } from "../../../components/ui/PageHeader";
 import { Button } from "../../../components/ui/Button";
 import { Card, CardContent } from "../../../components/ui/Card";
 import { useUser } from "../../../stores/hooks/useUser";
-import { Briefcase, Building, Shield, User, Clock, Check, Edit2, ShieldAlert } from "lucide-react";
+import { Briefcase, Shield, User, Clock, Check, Edit2, ShieldAlert } from "lucide-react";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
@@ -14,7 +14,6 @@ export const MyProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [fullName, setFullName] = useState(userStore.fullName || "");
   const [email, setEmail] = useState(userStore.email || "");
-  const [area, setArea] = useState(userStore.area || "");
   const [position, setPosition] = useState(userStore.position || "");
 
   const handleSave = (e: React.FormEvent) => {
@@ -28,7 +27,6 @@ export const MyProfilePage: React.FC = () => {
     userStore.updateUser({
       fullName,
       email,
-      area,
       position,
     });
 
@@ -39,7 +37,6 @@ export const MyProfilePage: React.FC = () => {
   const handleCancel = () => {
     setFullName(userStore.fullName || "");
     setEmail(userStore.email || "");
-    setArea(userStore.area || "");
     setPosition(userStore.position || "");
     setIsEditing(false);
   };
@@ -112,9 +109,7 @@ export const MyProfilePage: React.FC = () => {
               {userStore.role || "Funcionario"}
             </span>
           </div>
-          <p className="text-xs text-blue-200 mt-1 font-semibold flex items-center justify-center md:justify-start gap-1">
-            <Building className="w-3.5 h-3.5" /> {userStore.area || "Área General"}
-          </p>
+
           <p className="text-xs text-blue-100 mt-2 font-medium flex items-center justify-center md:justify-start gap-1">
             <Briefcase className="w-3.5 h-3.5 text-blue-300" /> {userStore.position || "Personal Técnico"}
           </p>
@@ -199,10 +194,7 @@ export const MyProfilePage: React.FC = () => {
                       <span className="text-sm font-bold text-text-primary">{userStore.email || "Sin registrar"}</span>
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] uppercase font-black tracking-wider text-text-secondary">Área o Gerencia</span>
-                      <span className="text-sm font-bold text-text-primary">{userStore.area || "Sin registrar"}</span>
-                    </div>
+
 
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] uppercase font-black tracking-wider text-text-secondary">Cargo Asignado</span>
@@ -240,17 +232,7 @@ export const MyProfilePage: React.FC = () => {
                       />
                     </div>
 
-                    {/* Area */}
-                    <div className="flex flex-col gap-1.5">
-                      <label className="text-[10px] font-black uppercase text-text-secondary">Área o Gerencia</label>
-                      <input
-                        type="text"
-                        value={area}
-                        onChange={(e) => setArea(e.target.value)}
-                        className="w-full bg-light-bg border border-border-color rounded-xl py-2 px-3.5 text-xs font-semibold text-text-primary focus:outline-none focus:ring-2 focus:ring-navy-blue/20 transition-shadow"
-                        placeholder="Ej. Tecnologías de Información"
-                      />
-                    </div>
+
 
                     {/* Position */}
                     <div className="flex flex-col gap-1.5">

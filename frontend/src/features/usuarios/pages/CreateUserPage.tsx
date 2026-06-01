@@ -5,7 +5,7 @@ import { Button } from "../../../components/ui/Button";
 import { UserForm } from "../components/UserForm";
 import { useCreateUser } from "../hooks/useCreateUser";
 import { ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
+import { alerts } from "../../../utils/sweetalert";
 import type { UserSchemaInput } from "../schemas/user.schema";
 
 export const CreateUserPage: React.FC = () => {
@@ -13,6 +13,14 @@ export const CreateUserPage: React.FC = () => {
   const createUserMutation = useCreateUser();
 
   const handleSubmit = async (data: UserSchemaInput) => {
+    const result = await alerts.confirmAction(
+      "Confirmar Registro",
+      "¿Está seguro de registrar este nuevo usuario?",
+      "Registrar",
+      "Cancelar"
+    );
+    if (!result.isConfirmed) return;
+
     try {
       await createUserMutation.mutateAsync({
         fullName: data.fullName,
@@ -21,13 +29,12 @@ export const CreateUserPage: React.FC = () => {
         status: data.status,
         phone: data.phone,
         position: data.position,
-        area: data.area,
         password: data.password,
       });
-      toast.success("Usuario registrado exitosamente");
+      await alerts.success("Usuario Creado", "El usuario ha sido registrado exitosamente.");
       navigate("/usuarios");
     } catch (err: any) {
-      toast.error(err.message || "Error al registrar el usuario");
+      alerts.error("Error", err.message || "Error al registrar el usuario");
     }
   };
 

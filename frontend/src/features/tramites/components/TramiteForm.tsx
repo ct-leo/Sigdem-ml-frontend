@@ -7,6 +7,7 @@ import { Button } from "../../../components/ui/Button";
 import { TramiteDropzone } from "./TramiteDropzone";
 import { useCreateTramite } from "../hooks/useCreateTramite";
 import { useNavigate } from "react-router-dom";
+import { alerts } from "../../../utils/sweetalert";
 
 export const TramiteForm: React.FC = () => {
   const { mutate, isPending } = useCreateTramite();
@@ -29,10 +30,22 @@ export const TramiteForm: React.FC = () => {
     },
   });
 
-  const onSubmit = (data: NewTramiteFormValues) => {
+  const onSubmit = async (data: NewTramiteFormValues) => {
+    const result = await alerts.confirmAction(
+      "Registrar Expediente",
+      "¿Desea crear un nuevo expediente de trámite?",
+      "Registrar",
+      "Cancelar"
+    );
+    if (!result.isConfirmed) return;
+
     mutate(data, {
-      onSuccess: () => {
+      onSuccess: async () => {
+        await alerts.success("Trámite Registrado", "El expediente ha sido registrado exitosamente en Mesa de Partes.");
         navigate("/tramites");
+      },
+      onError: (err: any) => {
+        alerts.error("Error", err?.message || "Hubo un error al registrar el trámite");
       }
     });
   };

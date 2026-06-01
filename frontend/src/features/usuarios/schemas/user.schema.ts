@@ -3,7 +3,7 @@ import { z } from "zod";
 export const userSchema = z.object({
   fullName: z.string().min(3, "El nombre completo debe tener al menos 3 caracteres"),
   email: z.string().email("El correo electrónico no es válido"),
-  role: z.enum(["Administrador", "Supervisor", "Analista", "Operador", "RRHH"], {
+  role: z.enum(["ADMIN", "RECEPCIONISTA", "ANALISTA", "RRHH"], {
     errorMap: () => ({ message: "El rol es obligatorio" }),
   }),
   status: z.enum(["Activo", "Inactivo", "Suspendido", "Bloqueado"], {
@@ -11,7 +11,6 @@ export const userSchema = z.object({
   }),
   phone: z.string().regex(/^\d{9}$/, "El teléfono debe tener 9 dígitos numéricos"),
   position: z.string().min(2, "El cargo debe tener al menos 2 caracteres"),
-  area: z.string().min(2, "El área es obligatoria"),
   password: z.string().optional(),
   confirmPassword: z.string().optional(),
 }).refine((data) => {

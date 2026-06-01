@@ -1,19 +1,25 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { MoreVertical, Eye, Edit, Key, Trash2 } from "lucide-react";
+import { MoreVertical, Eye, Edit, Key, Trash2, Check, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useDeleteUser } from "../hooks/useDeleteUser";
-import type { User } from "../types/user.types";
+import { useActivateUser } from "../hooks/useActivateUser";
+import { useDeactivateUser } from "../hooks/useDeactivateUser";
+import type { LegacyUser } from "../types/user.types";
+import { alerts } from "../../../utils/sweetalert";
 
 interface UserActionsProps {
-  user: User;
+  user: LegacyUser;
 }
 
 export const UserActions: React.FC<UserActionsProps> = ({ user }) => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  
   const deleteMutation = useDeleteUser();
+  const activateMutation = useActivateUser();
+  const deactivateMutation = useDeactivateUser();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -25,19 +31,65 @@ export const UserActions: React.FC<UserActionsProps> = ({ user }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleResetPassword = () => {
+  const handleResetPassword = async () => {
     setIsOpen(false);
-    toast.success(`Se ha enviado un correo de restablecimiento de contraseña a: ${user.email}`);
+    const result = await alerts.confirmAction(
+      "Restablecer Clave",
+      `¿Desea enviar un enlace de recuperación de contraseña a ${user.email}?`,
+      "Enviar Correo",
+      "Cancelar"
+    );
+    if (result.isConfirmed) {
+      toast.success(`Se ha enviado un correo de restablecimiento de contraseña a: ${user.email}`);
+    }
+  };
+
+  const handleActivate = async () => {
+    setIsOpen(false);
+    const result = await alerts.confirmAction(
+      "Activar Funcionario",
+      `¿Desea habilitar los privilegios de acceso para ${user.fullName}?`,
+      "Habilitar",
+      "Cancelar"
+    );
+    if (result.isConfirmed) {
+      try {
+        await activateMutation.mutateAsync(user.id);
+      } catch (err) {
+        // Handled in hook
+      }
+    }
+  };
+
+  const handleDeactivate = async () => {
+    setIsOpen(false);
+    const result = await alerts.confirmAction(
+      "Desactivar Funcionario",
+      `¿Está seguro que desea suspender temporalmente al funcionario ${user.fullName}?`,
+      "Suspender",
+      "Cancelar",
+      true
+    );
+    if (result.isConfirmed) {
+      try {
+        await deactivateMutation.mutateAsync(user.id);
+      } catch (err) {
+        // Handled in hook
+      }
+    }
   };
 
   const handleDelete = async () => {
     setIsOpen(false);
-    if (window.confirm(`¿Está seguro que desea eliminar permanentemente al usuario ${user.fullName}?`)) {
+    const result = await alerts.confirmDelete(
+      "¿Eliminar Funcionario?",
+      `¿Está seguro que desea eliminar permanentemente la cuenta de ${user.fullName}? Esta acción es irreversible.`
+    );
+    if (result.isConfirmed) {
       try {
         await deleteMutation.mutateAsync(user.id);
-        toast.success(`Usuario ${user.fullName} eliminado exitosamente`);
-      } catch (err: any) {
-        toast.error(err.message || "Error al eliminar el usuario");
+      } catch (err) {
+        // Handled in hook
       }
     }
   };
@@ -63,6 +115,7 @@ export const UserActions: React.FC<UserActionsProps> = ({ user }) => {
             <Eye className="w-4 h-4 text-navy-blue" />
             Ver Perfil
           </button>
+          
           <button
             onClick={() => {
               setIsOpen(false);
@@ -73,6 +126,25 @@ export const UserActions: React.FC<UserActionsProps> = ({ user }) => {
             <Edit className="w-4 h-4 text-[#7DAA74]" />
             Editar Usuario
           </button>
+
+          {user.status === "Inactivo" ? (
+            <button
+              onClick={handleActivate}
+              className="w-full text-left px-4 py-2 hover:bg-light-bg text-dashboard-green flex items-center gap-2 font-bold"
+            >
+              <Check className="w-4 h-4 text-dashboard-green" />
+              Activar Usuario
+            </button>
+          ) : (
+            <button
+              onClick={handleDeactivate}
+              className="w-full text-left px-4 py-2 hover:bg-light-bg text-orange-500 flex items-center gap-2 font-bold"
+            >
+              <XCircle className="w-4 h-4 text-orange-500" />
+              Desactivar Usuario
+            </button>
+          )}
+
           <button
             onClick={handleResetPassword}
             className="w-full text-left px-4 py-2 hover:bg-light-bg flex items-center gap-2"
@@ -80,7 +152,9 @@ export const UserActions: React.FC<UserActionsProps> = ({ user }) => {
             <Key className="w-4 h-4 text-golden-sand" />
             Restablecer Clave
           </button>
+          
           <hr className="border-border-color my-1" />
+          
           <button
             onClick={handleDelete}
             className="w-full text-left px-4 py-2 hover:bg-light-bg text-danger flex items-center gap-2 font-bold"

@@ -1,10 +1,9 @@
 import React from "react";
 import { Badge } from "../../../components/ui/Badge";
-import type { UserRole } from "../types/user.types";
 import { ShieldAlert, ShieldCheck, ShieldAlert as UserIcon, Award, UserCheck } from "lucide-react";
 
 interface UserRoleBadgeProps {
-  role: UserRole;
+  role: any;
 }
 
 export const UserRoleBadge: React.FC<UserRoleBadgeProps> = ({ role }) => {
@@ -36,10 +35,14 @@ export const UserRoleBadge: React.FC<UserRoleBadgeProps> = ({ role }) => {
     },
   };
 
-  const { variant, icon: Icon, label } = config[role] || {
+  const normalizedRole = role === "ADMIN" ? "Administrador" : 
+                         (role === "RECEPCIONISTA" ? "Operador" : 
+                         (role === "ANALISTA" ? "Analista" : role));
+
+  const { variant, icon: Icon, label } = config[normalizedRole as keyof typeof config] || {
     variant: "default" as const,
     icon: UserIcon,
-    label: role,
+    label: normalizedRole,
   };
 
   return (

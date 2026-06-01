@@ -31,7 +31,7 @@ export const UserStatusBadge: React.FC<UserStatusBadgeProps> = ({ status }) => {
     },
   };
 
-  const { variant, icon: Icon, label } = config[status] || {
+  const { variant, icon: Icon, label } = config[status as keyof typeof config] || {
     variant: "default" as const,
     icon: XCircle,
     label: status,
