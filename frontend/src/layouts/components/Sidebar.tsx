@@ -123,7 +123,7 @@ export const Sidebar: React.FC = () => {
       <div className="p-4 border-t border-white/10">
         {!sidebarCollapsed && (
           <div className="text-xs text-white/50 text-center">
-            v1.0.0 - Municipalidad
+            SIGDEM-ML © 2026
           </div>
         )}
       </div>
