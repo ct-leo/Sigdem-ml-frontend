@@ -1,18 +1,38 @@
 import React from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDocument } from "../hooks/useDocument";
+import { useDeleteDocument } from "../hooks/useDeleteDocument";
 import { DocumentViewer } from "../components/DocumentViewer";
 import { DocumentInfoCard } from "../components/DocumentInfoCard";
 import { RecentDocuments } from "../components/RecentDocuments";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { Button } from "../../../components/ui/Button";
-import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { alerts } from "../../../utils/sweetalert";
 
 export const DocumentDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: document, isLoading, error } = useDocument(id || "");
+  const docId = Number(id);
+
+  const { data: document, isLoading, error } = useDocument(docId);
+  const deleteMutation = useDeleteDocument();
+
+  const handleDelete = async () => {
+    const result = await alerts.confirmDelete(
+      "¿Desea eliminar este documento?",
+      "El archivo digital será purgado permanentemente de los registros municipales y servidores cloud."
+    );
+
+    if (result.isConfirmed) {
+      deleteMutation.mutate(docId, {
+        onSuccess: () => {
+          navigate("/documentos");
+        }
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -48,23 +68,33 @@ export const DocumentDetailPage: React.FC = () => {
     <div className="flex flex-col gap-6 pb-8">
       {/* Detail header with return actions and breadcrumbs */}
       <PageHeader
-        title={document.name}
+        title={document.nombre_original}
         description={`Visualización, metadatos estructurados e indexado OCR del expediente institucional.`}
         actions={
-          <Button
-            onClick={() => navigate("/documentos")}
-            variant="default"
-            className="gap-2 border border-border-color bg-white hover:bg-gray-50 text-text-primary"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Volver al Repositorio
-          </Button>
+          <div className="flex items-center gap-3 select-none">
+            <Button
+              onClick={() => navigate("/documentos")}
+              variant="default"
+              className="gap-2 border border-border-color bg-white hover:bg-gray-50 text-text-primary font-bold text-xs uppercase tracking-wider"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Volver
+            </Button>
+            <Button
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+              className="gap-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs uppercase tracking-wider"
+            >
+              <Trash2 className="w-4 h-4 text-white" />
+              {deleteMutation.isPending ? "Eliminando..." : "Eliminar Documento"}
+            </Button>
+          </div>
         }
       />
 
       {/* Main Layout Division */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
-        {/* Left Side: Interative Document Viewer */}
+        {/* Left Side: Interactive Document Viewer */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}

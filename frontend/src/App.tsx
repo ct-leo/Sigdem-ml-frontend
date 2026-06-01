@@ -12,6 +12,7 @@ import { DashboardPage } from "./features/dashboard/pages/DashboardPage";
 import { TramitesPage } from "./features/tramites/pages/TramitesPage";
 import { NewTramitePage } from "./features/tramites/pages/NewTramitePage";
 import { TramiteDetailPage } from "./features/tramites/pages/TramiteDetailPage";
+import { EditTramitePage } from "./features/tramites/pages/EditTramitePage";
 import { DocumentsPage } from "./features/documentos/pages/DocumentsPage";
 import { DocumentDetailPage } from "./features/documentos/pages/DocumentDetailPage";
 import { MachineLearningPage } from "./features/machine-learning/pages/MachineLearningPage";
@@ -21,7 +22,7 @@ import { CreateJobPage } from "./features/rrhh/pages/CreateJobPage";
 import { EditJobPage } from "./features/rrhh/pages/EditJobPage";
 import { CurriculumsPage } from "./features/curriculos/pages/CurriculumsPage";
 import { CurriculumDetailPage } from "./features/curriculos/pages/CurriculumDetailPage";
-import { RankingsPage } from "./features/rankings/pages/RankingsPage";
+import { NLPPage as RankingsPage } from "./features/nlp/pages/NLPPage";
 import { CandidateRankingDetailPage } from "./features/rankings/pages/CandidateRankingDetailPage";
 import { UsersPage } from "./features/usuarios/pages/UsersPage";
 import { CreateUserPage } from "./features/usuarios/pages/CreateUserPage";
@@ -34,8 +35,9 @@ import { RRHHReportPage } from "./features/reportes/pages/RRHHReportPage";
 import { ProductivityReportPage } from "./features/reportes/pages/ProductivityReportPage";
 import { AIReportPage } from "./features/reportes/pages/AIReportPage";
 import { NotificationCenterPage } from "./features/notifications/pages/NotificationCenterPage";
-import { ProtectedRoute } from "./routes/ProtectedRoute";
+import { ProtectedRoute } from "./auth/guards/ProtectedRoute";
 import { PublicRoute } from "./routes/PublicRoute";
+import { RoleGuard } from "./auth/guards/RoleGuard";
 
 const queryClient = new QueryClient();
 
@@ -55,38 +57,49 @@ function AnimatedRoutes() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route element={<MainLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
+            {/* Dashboard: ADMIN only */}
+            <Route path="/dashboard" element={<RoleGuard roles={["ADMIN"]}><DashboardPage /></RoleGuard>} />
 
-            <Route path="/tramites" element={<TramitesPage />} />
-            <Route path="/tramites/nuevo" element={<NewTramitePage />} />
-            <Route path="/tramites/:id" element={<TramiteDetailPage />} />
+            {/* Trámites: ADMIN, RECEPCIONISTA, ANALISTA */}
+            <Route path="/tramites" element={<RoleGuard roles={["ADMIN", "RECEPCIONISTA", "ANALISTA"]}><TramitesPage /></RoleGuard>} />
+            <Route path="/tramites/nuevo" element={<RoleGuard roles={["ADMIN", "RECEPCIONISTA"]}><NewTramitePage /></RoleGuard>} />
+            <Route path="/tramites/:id" element={<RoleGuard roles={["ADMIN", "RECEPCIONISTA", "ANALISTA"]}><TramiteDetailPage /></RoleGuard>} />
+            <Route path="/tramites/:id/editar" element={<RoleGuard roles={["ADMIN", "ANALISTA"]}><EditTramitePage /></RoleGuard>} />
 
-            <Route path="/documentos" element={<DocumentsPage />} />
-            <Route path="/documentos/:id" element={<DocumentDetailPage />} />
+            {/* Documentos: ADMIN, RECEPCIONISTA, ANALISTA */}
+            <Route path="/documentos" element={<RoleGuard roles={["ADMIN", "RECEPCIONISTA", "ANALISTA"]}><DocumentsPage /></RoleGuard>} />
+            <Route path="/documentos/:id" element={<RoleGuard roles={["ADMIN", "RECEPCIONISTA", "ANALISTA"]}><DocumentDetailPage /></RoleGuard>} />
 
-            <Route path="/machine-learning" element={<MachineLearningPage />} />
+            {/* Machine Learning: ADMIN, ANALISTA */}
+            <Route path="/machine-learning" element={<RoleGuard roles={["ADMIN", "ANALISTA"]}><MachineLearningPage /></RoleGuard>} />
 
-            <Route path="/convocatorias" element={<JobsPage />} />
-            <Route path="/convocatorias/nueva" element={<CreateJobPage />} />
-            <Route path="/convocatorias/:id" element={<JobDetailPage />} />
-            <Route path="/convocatorias/:id/editar" element={<EditJobPage />} />
+            {/* Convocatorias: ADMIN, RRHH */}
+            <Route path="/convocatorias" element={<RoleGuard roles={["ADMIN", "RRHH"]}><JobsPage /></RoleGuard>} />
+            <Route path="/convocatorias/nueva" element={<RoleGuard roles={["ADMIN", "RRHH"]}><CreateJobPage /></RoleGuard>} />
+            <Route path="/convocatorias/:id" element={<RoleGuard roles={["ADMIN", "RRHH"]}><JobDetailPage /></RoleGuard>} />
+            <Route path="/convocatorias/:id/editar" element={<RoleGuard roles={["ADMIN", "RRHH"]}><EditJobPage /></RoleGuard>} />
 
-            <Route path="/curriculos" element={<CurriculumsPage />} />
-            <Route path="/curriculos/:id" element={<CurriculumDetailPage />} />
+            {/* Currículos: ADMIN, RRHH */}
+            <Route path="/curriculos" element={<RoleGuard roles={["ADMIN", "RRHH"]}><CurriculumsPage /></RoleGuard>} />
+            <Route path="/curriculos/:id" element={<RoleGuard roles={["ADMIN", "RRHH"]}><CurriculumDetailPage /></RoleGuard>} />
 
-            <Route path="/rankings" element={<RankingsPage />} />
-            <Route path="/rankings/:id" element={<CandidateRankingDetailPage />} />
+            {/* Rankings: ADMIN, RRHH */}
+            <Route path="/rankings" element={<RoleGuard roles={["ADMIN", "RRHH"]}><RankingsPage /></RoleGuard>} />
+            <Route path="/rankings/:id" element={<RoleGuard roles={["ADMIN", "RRHH"]}><CandidateRankingDetailPage /></RoleGuard>} />
 
-            <Route path="/usuarios" element={<UsersPage />} />
-            <Route path="/usuarios/nuevo" element={<CreateUserPage />} />
-            <Route path="/usuarios/:id" element={<UserDetailPage />} />
-            <Route path="/usuarios/:id/editar" element={<EditUserPage />} />
+            {/* Usuarios: ADMIN only */}
+            <Route path="/usuarios" element={<RoleGuard roles={["ADMIN"]}><UsersPage /></RoleGuard>} />
+            <Route path="/usuarios/nuevo" element={<RoleGuard roles={["ADMIN"]}><CreateUserPage /></RoleGuard>} />
+            <Route path="/usuarios/:id" element={<RoleGuard roles={["ADMIN"]}><UserDetailPage /></RoleGuard>} />
+            <Route path="/usuarios/:id/editar" element={<RoleGuard roles={["ADMIN"]}><EditUserPage /></RoleGuard>} />
 
-            <Route path="/reportes" element={<ReportsPage />} />
-            <Route path="/reportes/tramites" element={<TramitesReportPage />} />
-            <Route path="/reportes/rrhh" element={<RRHHReportPage />} />
-            <Route path="/reportes/productividad" element={<ProductivityReportPage />} />
-            <Route path="/reportes/inteligencia-artificial" element={<AIReportPage />} />
+            {/* Reportes: ADMIN, RRHH, ANALISTA */}
+            <Route path="/reportes" element={<RoleGuard roles={["ADMIN", "RRHH", "ANALISTA"]}><ReportsPage /></RoleGuard>} />
+            <Route path="/reportes/tramites" element={<RoleGuard roles={["ADMIN", "RRHH", "ANALISTA"]}><TramitesReportPage /></RoleGuard>} />
+            <Route path="/reportes/rrhh" element={<RoleGuard roles={["ADMIN", "RRHH", "ANALISTA"]}><RRHHReportPage /></RoleGuard>} />
+            <Route path="/reportes/productividad" element={<RoleGuard roles={["ADMIN", "RRHH", "ANALISTA"]}><ProductivityReportPage /></RoleGuard>} />
+            <Route path="/reportes/inteligencia-artificial" element={<RoleGuard roles={["ADMIN", "RRHH", "ANALISTA"]}><AIReportPage /></RoleGuard>} />
+            
             <Route path="/notificaciones" element={<NotificationCenterPage />} />
             <Route path="/mi-perfil" element={<MyProfilePage />} />
           </Route>

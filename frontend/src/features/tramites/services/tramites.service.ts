@@ -1,61 +1,51 @@
-import type { Tramite, CreateTramiteDto } from "../types/tramite.types";
-import { mockTramites } from "../data/mockTramites";
-import dayjs from "dayjs";
-
-// Simulated network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { apiClient } from "../../../api/axios";
+import type { 
+  Tramite, 
+  TramiteHistory, 
+  CreateTramiteDto, 
+  UpdateTramiteDto,
+  TramiteStatus
+} from "../types/tramite.types";
 
 class TramitesService {
-  private tramites: Tramite[] = [...mockTramites];
+  async getTramites(filters?: { estado?: string; prioridad?: string; area?: string }): Promise<Tramite[]> {
+    const params: Record<string, string> = {};
+    if (filters?.estado) params.estado = filters.estado;
+    if (filters?.prioridad) params.prioridad = filters.prioridad;
+    if (filters?.area) params.area = filters.area;
 
-  async getTramites(): Promise<Tramite[]> {
-    await delay(800); // Simulate network latency
-    return [...this.tramites].sort((a, b) => dayjs(b.createdAt).valueOf() - dayjs(a.createdAt).valueOf());
+    const response = await apiClient.get<Tramite[]>("/tramites/", { params });
+    return response.data;
   }
 
-  async getTramiteById(id: string): Promise<Tramite | undefined> {
-    await delay(500);
-    return this.tramites.find(t => t.id === id);
+  async getTramite(id: number): Promise<Tramite> {
+    const response = await apiClient.get<Tramite>(`/tramites/${id}`);
+    return response.data;
   }
 
   async createTramite(data: CreateTramiteDto): Promise<Tramite> {
-    await delay(1200);
-    
-    const newTramite: Tramite = {
-      id: `TRM-${dayjs().year()}-${String(this.tramites.length + 1).padStart(3, '0')}`,
-      code: `EXP-${4000 + this.tramites.length + 1}`,
-      type: data.type,
-      applicant: {
-        name: data.applicantEmail.split('@')[0], // Simulated name
-        email: data.applicantEmail,
-      },
-      description: data.description,
-      status: 'Registrado',
-      priority: data.priority,
-      createdAt: dayjs().toISOString(),
-      updatedAt: dayjs().toISOString(),
-      responsibleArea: data.responsibleArea,
-      history: [
-        {
-          id: `h-${Date.now()}`,
-          action: 'Trámite Registrado',
-          timestamp: dayjs().toISOString(),
-          user: 'Sistema',
-          status: 'Registrado'
-        }
-      ],
-      documents: data.files ? data.files.map((file, i) => ({
-        id: `d-${Date.now()}-${i}`,
-        name: file.name,
-        type: file.type || 'application/octet-stream',
-        size: file.size,
-        uploadedAt: dayjs().toISOString(),
-        url: '#' // Simulated URL
-      })) : []
-    };
+    const response = await apiClient.post<Tramite>("/tramites/", data);
+    return response.data;
+  }
 
-    this.tramites = [newTramite, ...this.tramites];
-    return newTramite;
+  async updateTramite(id: number, data: UpdateTramiteDto): Promise<Tramite> {
+    const response = await apiClient.put<Tramite>(`/tramites/${id}`, data);
+    return response.data;
+  }
+
+  async changeStatus(id: number, data: { estado: TramiteStatus; comentario: string }): Promise<Tramite> {
+    const response = await apiClient.patch<Tramite>(`/tramites/${id}/status`, data);
+    return response.data;
+  }
+
+  async assignAnalyst(id: number, data: { analista_id: number; comentario: string }): Promise<Tramite> {
+    const response = await apiClient.patch<Tramite>(`/tramites/${id}/assign`, data);
+    return response.data;
+  }
+
+  async getHistory(id: number): Promise<TramiteHistory[]> {
+    const response = await apiClient.get<TramiteHistory[]>(`/tramites/${id}/history`);
+    return response.data;
   }
 }
 

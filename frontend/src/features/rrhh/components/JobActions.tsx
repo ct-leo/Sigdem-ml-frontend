@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
-import { MoreHorizontal, Edit, Copy, CheckCircle, Trash2 } from "lucide-react";
+import { MoreHorizontal, Edit, CheckCircle, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { useDeleteJob, useUpdateJob } from "../hooks/useUpdateJob";
-import { useCreateJob } from "../hooks/useCreateJob";
+import { useDeleteJob } from "../hooks/useDeleteJob";
+import { useUpdateJob } from "../hooks/useUpdateJob";
 import { alerts } from "../../../utils/sweetalert";
-import type { Job } from "../types/job.types";
+import type { Job, JobStatus } from "../types/job.types";
 
 interface JobActionsProps {
   job: Job;
@@ -18,7 +18,6 @@ export const JobActions: React.FC<JobActionsProps> = ({ job }) => {
 
   const deleteMutation = useDeleteJob();
   const updateMutation = useUpdateJob();
-  const duplicateMutation = useCreateJob();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -34,60 +33,25 @@ export const JobActions: React.FC<JobActionsProps> = ({ job }) => {
     setIsOpen(false);
     const result = await alerts.confirmDelete(
       "¿Eliminar Convocatoria?",
-      `¿Está seguro que desea eliminar permanentemente la convocatoria "${job.title}"? Esta acción es irreversible.`
+      `¿Está seguro que desea eliminar permanentemente la convocatoria "${job.titulo}"? Esta acción es irreversible.`
     );
     if (!result.isConfirmed) return;
 
-    try {
-      await deleteMutation.mutateAsync(job.id);
-      await alerts.success("Convocatoria Eliminada", "La oferta de empleo ha sido removida del sistema.");
-    } catch {
-      alerts.error("Error", "Error al eliminar la convocatoria");
-    }
-  };
-
-  const handleDuplicate = async () => {
-    setIsOpen(false);
-    const result = await alerts.confirmAction(
-      "Duplicar Convocatoria",
-      `¿Desea crear una copia en borrador de "${job.title}"?`,
-      "Duplicar",
-      "Cancelar"
-    );
-    if (!result.isConfirmed) return;
-
-    const duplicateDto = {
-      title: `${job.title} (Copia)`,
-      area: job.area,
-      description: job.description,
-      vacancies: job.vacancies,
-      experienceYears: job.requirements.experienceYears,
-      academicLevel: job.requirements.academicLevel,
-      certifications: job.requirements.certifications.join(", "),
-      skills: job.requirements.skills.join(", "),
-      publishedAt: new Date().toISOString().substring(0, 10),
-      closedAt: job.closedAt.substring(0, 10),
-      status: "Borrador" as const,
-    };
-
-    try {
-      await duplicateMutation.mutateAsync(duplicateDto);
-      await alerts.success("Convocatoria Duplicada", "Se ha creado una copia en estado Borrador exitosamente.");
-    } catch {
-      alerts.error("Error", "Error al duplicar la convocatoria");
-    }
+    deleteMutation.mutate(job.id, {
+      onSuccess: () => {
+        alerts.success("Convocatoria Eliminada", "La oferta de empleo ha sido removida del sistema.");
+      }
+    });
   };
 
   const handleToggleStatus = async () => {
     setIsOpen(false);
-    const nextStatuses: Record<string, "Activa" | "Pausada" | "Cerrada" | "Borrador"> = {
-      Borrador: "Activa",
-      Activa: "Pausada",
-      Pausada: "Cerrada",
-      Cerrada: "Activa",
-      Finalizada: "Activa",
+    const nextStatuses: Record<string, JobStatus> = {
+      ABIERTA: "PAUSADA",
+      PAUSADA: "CERRADA",
+      CERRADA: "ABIERTA",
     };
-    const nextStatus = nextStatuses[job.status] || "Activa";
+    const nextStatus = nextStatuses[job.estado] || "ABIERTA";
 
     const result = await alerts.confirmAction(
       "Cambiar Estado",
@@ -97,15 +61,17 @@ export const JobActions: React.FC<JobActionsProps> = ({ job }) => {
     );
     if (!result.isConfirmed) return;
 
-    try {
-      await updateMutation.mutateAsync({
-        id: job.id,
-        status: nextStatus,
-      });
-      await alerts.success("Estado Actualizado", `El estado ha cambiado a ${nextStatus} correctamente.`);
-    } catch {
-      alerts.error("Error", "Error al cambiar el estado");
-    }
+    updateMutation.mutate({
+      id: job.id,
+      data: {
+        titulo: job.titulo,
+        estado: nextStatus,
+      }
+    }, {
+      onSuccess: () => {
+        alerts.success("Estado Actualizado", `El estado ha cambiado a ${nextStatus} correctamente.`);
+      }
+    });
   };
 
   return (
@@ -134,23 +100,18 @@ export const JobActions: React.FC<JobActionsProps> = ({ job }) => {
               Editar
             </button>
             <button
-              onClick={handleDuplicate}
-              className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors"
-            >
-              <Copy className="w-4 h-4 text-text-secondary" />
-              Duplicar
-            </button>
-            <button
               onClick={handleToggleStatus}
-              className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              disabled={updateMutation.isPending}
+              className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-50"
             >
-              <CheckCircle className="w-4 h-4 text-municipal-green" />
+              <CheckCircle className="w-4 h-4 text-[#749763]" />
               Cambiar estado
             </button>
             <div className="border-t border-border-color my-1"></div>
             <button
               onClick={handleDelete}
-              className="w-full px-4 py-2 text-left text-sm text-danger hover:bg-red-50 flex items-center gap-2 transition-colors"
+              disabled={deleteMutation.isPending}
+              className="w-full px-4 py-2 text-left text-sm text-danger hover:bg-red-50 flex items-center gap-2 transition-colors disabled:opacity-50"
             >
               <Trash2 className="w-4 h-4 text-danger" />
               Eliminar

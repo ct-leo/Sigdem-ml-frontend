@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useJob } from "../hooks/useJob";
 import { useUpdateJob } from "../hooks/useUpdateJob";
 import { JobForm } from "../components/JobForm";
-import type { JobFormData } from "../schemas/job.schema";
+import type { JobFormValues } from "../schemas/job.schema";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { Button } from "../../../components/ui/Button";
 import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
@@ -12,10 +12,12 @@ import { alerts } from "../../../utils/sweetalert";
 export const EditJobPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data: job, isLoading, error } = useJob(id || "");
+  const jobId = Number(id);
+
+  const { data: job, isLoading, error } = useJob(jobId);
   const updateMutation = useUpdateJob();
 
-  const handleFormSubmit = async (data: JobFormData) => {
+  const handleFormSubmit = async (data: JobFormValues) => {
     const result = await alerts.confirmAction(
       "Guardar Cambios",
       "¿Desea guardar los cambios en esta convocatoria?",
@@ -24,16 +26,15 @@ export const EditJobPage: React.FC = () => {
     );
     if (!result.isConfirmed) return;
 
-    try {
-      await updateMutation.mutateAsync({
-        id: id || "",
-        ...data,
-      });
-      await alerts.success("Cambios Guardados", "La convocatoria laboral ha sido actualizada correctamente.");
-      navigate(`/convocatorias/${id}`);
-    } catch (err: any) {
-      alerts.error("Error", err.message || "Error al actualizar la convocatoria");
-    }
+    updateMutation.mutate({
+      id: jobId,
+      data,
+    }, {
+      onSuccess: () => {
+        alerts.success("Cambios Guardados", "La convocatoria laboral ha sido actualizada correctamente.");
+        navigate(`/convocatorias/${id}`);
+      }
+    });
   };
 
   if (isLoading) {
@@ -66,31 +67,27 @@ export const EditJobPage: React.FC = () => {
     );
   }
 
-  // Prep default values matching JobFormData structure
-  const formDefaults: Partial<JobFormData> = {
-    title: job.title,
+  // Prep default values matching JobFormValues structure
+  const formDefaults: Partial<JobFormValues> = {
+    titulo: job.titulo,
     area: job.area,
-    description: job.description,
-    vacancies: job.vacancies,
-    experienceYears: job.requirements.experienceYears,
-    academicLevel: job.requirements.academicLevel,
-    certifications: job.requirements.certifications.join(", "),
-    skills: job.requirements.skills.join(", "),
-    publishedAt: job.publishedAt.substring(0, 10),
-    closedAt: job.closedAt.substring(0, 10),
-    status: job.status,
+    descripcion: job.descripcion,
+    requisitos: job.requisitos,
+    modalidad: job.modalidad,
+    ubicacion: job.ubicacion,
+    estado: job.estado,
   };
 
   return (
     <div className="flex flex-col gap-6 pb-8 select-none">
       <PageHeader
         title="Editar Convocatoria"
-        description={`Modifica los requerimientos y alcances del expediente de reclutamiento ${job.code}.`}
+        description={`Modifica los requerimientos y alcances del expediente de reclutamiento CONV-${job.id}.`}
         actions={
           <Button
             onClick={() => navigate(`/convocatorias/${id}`)}
             variant="default"
-            className="gap-2 border border-border-color bg-white hover:bg-gray-50 text-text-primary"
+            className="gap-2 border border-border-color bg-white hover:bg-gray-50 text-text-primary font-bold text-xs uppercase tracking-wider"
           >
             <ArrowLeft className="w-4 h-4" />
             Cancelar y Volver

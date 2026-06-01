@@ -1,7 +1,8 @@
 import React from "react";
 import { Badge } from "../../../components/ui/Badge";
 import type { JobStatus } from "../types/job.types";
-import { Play, Pause, FileEdit, XOctagon, CheckCircle2 } from "lucide-react";
+import { Play, Pause, XOctagon } from "lucide-react";
+import { JOB_STATUS_LABELS } from "../constants/jobStatus";
 
 interface JobStatusBadgeProps {
   status: JobStatus;
@@ -9,37 +10,27 @@ interface JobStatusBadgeProps {
 
 export const JobStatusBadge: React.FC<JobStatusBadgeProps> = ({ status }) => {
   const config = {
-    Borrador: {
-      variant: "default" as const,
-      icon: FileEdit,
-      label: "Borrador",
-    },
-    Activa: {
+    ABIERTA: {
       variant: "success" as const,
       icon: Play,
-      label: "Convocatoria Activa",
+      label: JOB_STATUS_LABELS.ABIERTA,
     },
-    Pausada: {
+    PAUSADA: {
       variant: "warning" as const,
       icon: Pause,
-      label: "Pausada",
+      label: JOB_STATUS_LABELS.PAUSADA,
     },
-    Cerrada: {
+    CERRADA: {
       variant: "danger" as const,
       icon: XOctagon,
-      label: "Convocatoria Cerrada",
-    },
-    Finalizada: {
-      variant: "info" as const,
-      icon: CheckCircle2,
-      label: "Proceso Finalizado",
+      label: JOB_STATUS_LABELS.CERRADA,
     },
   };
 
   const { variant, icon: Icon, label } = config[status] || {
     variant: "default" as const,
-    icon: FileEdit,
-    label: status,
+    icon: Play,
+    label: status === "ABIERTA" ? "Convocatoria Activa" : status === "PAUSADA" ? "Temporalmente Pausada" : "Proceso Cerrado",
   };
 
   return (

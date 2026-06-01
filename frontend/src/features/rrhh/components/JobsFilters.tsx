@@ -1,9 +1,9 @@
 import React from "react";
 import { Filter, X } from "lucide-react";
-import type { JobArea, JobStatus } from "../types/job.types";
+import type { JobStatus } from "../types/job.types";
 
 export interface JobsFiltersState {
-  area?: JobArea | "";
+  area?: string;
   status?: JobStatus | "";
 }
 
@@ -19,7 +19,7 @@ export const JobsFilters: React.FC<JobsFiltersProps> = ({ filters, onFilterChang
     onFilterChange({ area: "", status: "" });
   };
 
-  const areas: JobArea[] = [
+  const areas = [
     "Recursos Humanos",
     "Tesorería",
     "Administración",
@@ -39,10 +39,10 @@ export const JobsFilters: React.FC<JobsFiltersProps> = ({ filters, onFilterChang
 
       <select
         value={filters.area || ""}
-        onChange={(e) => onFilterChange({ ...filters, area: e.target.value as JobArea })}
-        className="bg-white border border-border-color text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer"
+        onChange={(e) => onFilterChange({ ...filters, area: e.target.value })}
+        className="bg-white border border-border-color text-xs font-semibold text-text-primary rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer"
       >
-        <option value="">Áreas Responsables (Todas)</option>
+        <option value="">Área (Todas)</option>
         {areas.map((a) => (
           <option key={a} value={a}>
             {a}
@@ -53,20 +53,18 @@ export const JobsFilters: React.FC<JobsFiltersProps> = ({ filters, onFilterChang
       <select
         value={filters.status || ""}
         onChange={(e) => onFilterChange({ ...filters, status: e.target.value as JobStatus })}
-        className="bg-white border border-border-color text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer"
+        className="bg-white border border-border-color text-xs font-semibold text-text-primary rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer"
       >
-        <option value="">Estados Convocatoria (Todos)</option>
-        <option value="Borrador">Borrador</option>
-        <option value="Activa">Activa</option>
-        <option value="Pausada">Pausada</option>
-        <option value="Cerrada">Cerrada</option>
-        <option value="Finalizada">Finalizada</option>
+        <option value="">Estado (Todos)</option>
+        <option value="ABIERTA">Abierta</option>
+        <option value="PAUSADA">Pausada</option>
+        <option value="CERRADA">Cerrada</option>
       </select>
 
       {hasActiveFilters && (
         <button
           onClick={clearFilters}
-          className="text-sm text-text-secondary hover:text-danger flex items-center transition-colors font-medium ml-1"
+          className="text-xs text-text-secondary hover:text-danger flex items-center transition-colors font-bold ml-1 uppercase tracking-wider"
         >
           <X className="w-4 h-4 mr-1" />
           Limpiar

@@ -1,5 +1,12 @@
 import React from "react";
-import type { TramiteDocument } from "../types/tramite.types";
+export interface TramiteDocument {
+  id: string;
+  name: string;
+  type: string;
+  size: number;
+  uploadedAt: string;
+  url: string;
+}
 import { Card, CardHeader, CardTitle, CardContent } from "../../../components/ui/Card";
 import { FileText, Download, Eye, File } from "lucide-react";
 import dayjs from "dayjs";

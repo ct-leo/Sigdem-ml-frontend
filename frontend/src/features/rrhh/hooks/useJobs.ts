@@ -1,16 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { jobsService } from "../services/jobs.service";
+import { JOBS_KEYS } from "../queryKeys/jobs.keys";
+import type { JobStatus } from "../types/job.types";
 
-export const useJobs = () => {
+export const useJobs = (filters?: { estado?: JobStatus; area?: string }) => {
   return useQuery({
-    queryKey: ["jobs"],
-    queryFn: () => jobsService.getJobs(),
+    queryKey: [...JOBS_KEYS.list, filters],
+    queryFn: () => jobsService.getJobs(filters),
   });
 };
 
-export const useJobStats = () => {
+export const useOpenJobs = () => {
   return useQuery({
-    queryKey: ["jobStats"],
-    queryFn: () => jobsService.getJobStats(),
+    queryKey: [...JOBS_KEYS.list, { estado: "ABIERTA" as JobStatus }],
+    queryFn: () => jobsService.getJobs({ estado: "ABIERTA" }),
   });
 };

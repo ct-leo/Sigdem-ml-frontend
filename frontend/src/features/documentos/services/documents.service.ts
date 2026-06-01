@@ -1,47 +1,60 @@
-import type { Document, DocumentStats } from "../types/document.types";
-import { MOCK_DOCUMENTS } from "../data/mockDocuments";
+import { apiClient } from "../../../api/axios";
+import type { 
+  Document, 
+  UploadDocumentDto, 
+  OCRResponse, 
+  DeleteResponse 
+} from "../types/document.types";
 
-const DELAY = 600;
+class DocumentsService {
+  async getDocuments(filters?: { tramite_id?: number; ocr_procesado?: string }): Promise<Document[]> {
+    const params: Record<string, any> = {};
+    if (filters?.tramite_id !== undefined && filters.tramite_id !== null) {
+      params.tramite_id = filters.tramite_id;
+    }
+    if (filters?.ocr_procesado) {
+      params.ocr_procesado = filters.ocr_procesado;
+    }
 
-export const documentsService = {
-  getDocuments: async (): Promise<Document[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve([...MOCK_DOCUMENTS]);
-      }, DELAY);
+    const response = await apiClient.get<Document[]>("/documents/", { params });
+    return response.data;
+  }
+
+  async getDocument(id: number): Promise<Document> {
+    const response = await apiClient.get<Document>(`/documents/${id}`);
+    return response.data;
+  }
+
+  async uploadDocument(data: UploadDocumentDto, onUploadProgress?: (progressEvent: any) => void): Promise<Document> {
+    const formData = new FormData();
+    formData.append("file", data.file);
+    formData.append("tramite_id", String(data.tramite_id));
+
+    const response = await apiClient.post<Document>("/documents/upload", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      onUploadProgress,
     });
-  },
+    return response.data;
+  }
 
-  getDocumentById: async (id: string): Promise<Document | null> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const doc = MOCK_DOCUMENTS.find((d) => d.id === id) || null;
-        resolve(doc);
-      }, DELAY);
+  async downloadDocument(id: number): Promise<Blob> {
+    const response = await apiClient.get(`/documents/${id}/download`, {
+      responseType: "blob",
     });
-  },
+    return response.data;
+  }
 
-  getDocumentStats: async (): Promise<DocumentStats> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        const total = MOCK_DOCUMENTS.length;
-        const pdfs = MOCK_DOCUMENTS.filter((d) => d.type === "PDF").length;
-        const processedOcr = MOCK_DOCUMENTS.filter((d) => d.statusOcr === "Procesado").length;
-        const pendingOcr = MOCK_DOCUMENTS.filter((d) => d.statusOcr === "Pendiente" || d.statusOcr === "En Proceso").length;
-        
-        // Sum total space in bytes
-        const totalBytes = MOCK_DOCUMENTS.reduce((sum, d) => sum + d.size, 0);
-        // Format to MB
-        const spaceUsed = `${(totalBytes / (1024 * 1024)).toFixed(2)} MB`;
+  async processOCR(id: number): Promise<OCRResponse> {
+    const response = await apiClient.post<OCRResponse>(`/documents/${id}/ocr`);
+    return response.data;
+  }
 
-        resolve({
-          total,
-          pdfs,
-          processedOcr,
-          pendingOcr,
-          spaceUsed,
-        });
-      }, DELAY);
-    });
-  },
-};
+  async deleteDocument(id: number): Promise<DeleteResponse> {
+    const response = await apiClient.delete<DeleteResponse>(`/documents/${id}`);
+    return response.data;
+  }
+}
+
+export const documentsService = new DocumentsService();

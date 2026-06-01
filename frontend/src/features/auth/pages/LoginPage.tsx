@@ -5,6 +5,8 @@ import { LoginBranding } from "../components/LoginBranding";
 import { LoginCard } from "../components/LoginCard";
 import { LoginForm } from "../components/LoginForm";
 import { AnimatedBackground } from "../components/AnimatedBackground";
+import { useUserStore } from "../../../stores/userStore";
+import { getDefaultRouteForRole } from "../../../auth/hooks/useRole";
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -27,9 +29,11 @@ export const LoginPage: React.FC = () => {
   const handleLoginSuccess = () => {
     // Primero, el lado derecho pasa a pantalla completa desplazando el izquierdo
     setAnimState('fullscreen');
-    // Luego de 2 segundos, se desplaza toda la vista al dashboard
+    // Luego de 2 segundos, se desplaza toda la vista al defaultRoute correspondiente al rol
     setTimeout(() => {
-      navigate('/dashboard');
+      const storedRol = useUserStore.getState().rol || useUserStore.getState().role;
+      const defaultRoute = getDefaultRouteForRole(storedRol as any);
+      navigate(defaultRoute);
     }, 2000);
   };
 

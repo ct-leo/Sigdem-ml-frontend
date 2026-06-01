@@ -7,61 +7,56 @@ import { DocumentsFilters } from "../components/DocumentsFilters";
 import { DocumentsSearch } from "../components/DocumentsSearch";
 import { DocumentCard } from "../components/DocumentCard";
 import { useDocuments } from "../hooks/useDocuments";
-import { useDocumentStats } from "../hooks/useDocument";
+import { UploadDocumentModal } from "../components/UploadDocumentModal";
 import type { DocumentsFiltersState } from "../components/DocumentsFilters";
 import { Plus, LayoutGrid, List } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { toast } from "sonner";
 
 export const DocumentsPage: React.FC = () => {
-  const { data: documents, isLoading } = useDocuments();
-  const { data: stats, isLoading: isLoadingStats } = useDocumentStats();
-
   const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState<DocumentsFiltersState>({});
   const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+  const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
+  // Fetch real documents from backend
+  const { data: documents, isLoading } = useDocuments({
+    tramite_id: filters.tramite_id || undefined,
+    ocr_procesado: filters.ocr_procesado || undefined
+  });
 
   const filteredDocuments = useMemo(() => {
     if (!documents) return [];
     return documents.filter((doc) => {
       // Global search matches
       const matchesSearch =
-        doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.procedureCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.responsibleArea.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.owner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        doc.type.toLowerCase().includes(searchTerm.toLowerCase());
+        doc.nombre_original.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(doc.id).includes(searchTerm) ||
+        String(doc.tramite_id).includes(searchTerm) ||
+        doc.tipo_archivo.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesType = filters.type ? doc.type === filters.type : true;
-      const matchesOCR = filters.statusOcr ? doc.statusOcr === filters.statusOcr : true;
-      const matchesArea = filters.responsibleArea
-        ? doc.responsibleArea === filters.responsibleArea
+      const matchesType = filters.tipo_archivo
+        ? doc.tipo_archivo.toLowerCase() === filters.tipo_archivo.toLowerCase()
         : true;
 
-      return matchesSearch && matchesType && matchesOCR && matchesArea;
+      return matchesSearch && matchesType;
     });
-  }, [documents, searchTerm, filters]);
-
-  const handleUploadClick = () => {
-    toast.info("Función de carga de documentos: listo para conexión con Backend");
-  };
+  }, [documents, searchTerm, filters.tipo_archivo]);
 
   return (
     <div className="flex flex-col gap-6 pb-8">
       <PageHeader
-        title="Gestión Documental"
-        description="Administra, consulta y visualiza documentos asociados a los expedientes institucionales."
+        title="Gestión Documental (DMS)"
+        description="Administra, consulta y visualiza expedientes y archivos digitalizados con indexación OCR de la municipalidad."
         actions={
-          <Button onClick={handleUploadClick} className="gap-2 bg-navy-blue hover:bg-blue-800">
+          <Button onClick={() => setIsUploadModalOpen(true)} className="gap-2 bg-navy-blue hover:bg-blue-800 font-bold text-xs uppercase tracking-wider">
             <Plus className="w-4.5 h-4.5" />
             Subir Documento
           </Button>
         }
       />
 
-      {/* KPI Stats */}
-      <DocumentStats stats={stats} isLoading={isLoadingStats} />
+      {/* KPI Stats computed dynamically from real documents */}
+      <DocumentStats documents={documents} isLoading={isLoading} />
 
       {/* Toolbar Search / Filter */}
       <motion.div
@@ -141,9 +136,9 @@ export const DocumentsPage: React.FC = () => {
                   ))}
                 </div>
               ) : filteredDocuments.length === 0 ? (
-                <div className="w-full bg-white rounded-xl border border-border-color shadow-sm p-12">
-                  <p className="text-center text-text-secondary text-sm">
-                    No se encontraron documentos
+                <div className="w-full bg-white rounded-xl border border-border-color shadow-sm p-12 text-center select-none">
+                  <p className="text-text-secondary text-xs font-semibold">
+                    No se encontraron documentos en la cuadrícula.
                   </p>
                 </div>
               ) : (
@@ -157,6 +152,12 @@ export const DocumentsPage: React.FC = () => {
           )}
         </AnimatePresence>
       </motion.div>
+
+      {/* Upload Document Modal */}
+      <UploadDocumentModal
+        isOpen={isUploadModalOpen}
+        onClose={() => setIsUploadModalOpen(false)}
+      />
     </div>
   );
 };

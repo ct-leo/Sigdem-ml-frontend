@@ -17,22 +17,29 @@ import {
 import { useAppStore } from "../../store/useAppStore";
 import { cn } from "../../lib/utils";
 import logo from "../../assets/images/logo-dashboard.png";
+import { usePermissions } from "../../auth/hooks/usePermissions";
+import { AppModule } from "../../auth/permissions/modules";
 
 const MENU_ITEMS = [
-  { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { path: "/tramites", label: "Trámites", icon: FileText },
-  { path: "/documentos", label: "Documentos", icon: Files },
-  { path: "/machine-learning", label: "Machine Learning", icon: Cpu },
-  { path: "/convocatorias", label: "Convocatorias", icon: Megaphone },
-  { path: "/curriculos", label: "Currículos", icon: Users },
-  { path: "/rankings", label: "Rankings", icon: Award },
-  { path: "/usuarios", label: "Usuarios", icon: UserCog },
-  { path: "/reportes", label: "Reportes", icon: PieChart },
+  { path: "/dashboard", label: "Dashboard", icon: LayoutDashboard, module: AppModule.DASHBOARD },
+  { path: "/tramites", label: "Trámites", icon: FileText, module: AppModule.TRAMITES },
+  { path: "/documentos", label: "Documentos", icon: Files, module: AppModule.DOCUMENTS },
+  { path: "/machine-learning", label: "Machine Learning", icon: Cpu, module: AppModule.MACHINE_LEARNING },
+  { path: "/convocatorias", label: "Convocatorias", icon: Megaphone, module: AppModule.HR },
+  { path: "/curriculos", label: "Currículos", icon: Users, module: AppModule.CVS },
+  { path: "/rankings", label: "Rankings", icon: Award, module: AppModule.RANKING },
+  { path: "/usuarios", label: "Usuarios", icon: UserCog, module: AppModule.USERS },
+  { path: "/reportes", label: "Reportes", icon: PieChart, module: AppModule.REPORTS },
 ];
 
 export const Sidebar: React.FC = () => {
   const { sidebarCollapsed, toggleSidebar } = useAppStore();
   const location = useLocation();
+  const { canAccessModule } = usePermissions();
+
+  const visibleMenuItems = React.useMemo(() => {
+    return MENU_ITEMS.filter((item) => canAccessModule(item.module));
+  }, [canAccessModule]);
 
   return (
     <motion.aside
@@ -69,7 +76,7 @@ export const Sidebar: React.FC = () => {
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto overflow-x-hidden scrollbar-hide py-4 px-3 flex flex-col gap-1">
-        {MENU_ITEMS.map((item) => {
+        {visibleMenuItems.map((item) => {
           const isActive = location.pathname.startsWith(item.path);
           return (
             <Link

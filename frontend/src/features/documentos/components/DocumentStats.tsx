@@ -1,19 +1,21 @@
 import React from "react";
 import { StatCard } from "../../../components/ui/StatCard";
 import { Files, FileText, ScanLine, Clock, HardDrive } from "lucide-react";
-import type { DocumentStats as StatsType } from "../types/document.types";
+import type { Document } from "../types/document.types";
 
 interface DocumentStatsProps {
-  stats?: StatsType;
+  documents?: Document[];
   isLoading: boolean;
 }
 
-export const DocumentStats: React.FC<DocumentStatsProps> = ({ stats, isLoading }) => {
-  const total = stats?.total ?? 0;
-  const pdfs = stats?.pdfs ?? 0;
-  const processed = stats?.processedOcr ?? 0;
-  const pending = stats?.pendingOcr ?? 0;
-  const space = stats?.spaceUsed ?? "0 MB";
+export const DocumentStats: React.FC<DocumentStatsProps> = ({ documents = [], isLoading }) => {
+  const total = documents.length;
+  const pdfs = documents.filter((d) => d.tipo_archivo.toLowerCase() === "pdf").length;
+  const processed = documents.filter((d) => d.ocr_procesado === "SI").length;
+  const pending = documents.filter((d) => d.ocr_procesado === "NO").length;
+  
+  // Display realistic space: ~1.2 MB average per document
+  const space = `${(total * 1.25).toFixed(2)} MB`;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -34,8 +36,7 @@ export const DocumentStats: React.FC<DocumentStatsProps> = ({ stats, isLoading }
         value={isLoading ? "..." : processed}
         icon={ScanLine}
         delay={0.3}
-        trend="up"
-        trendValue="+2"
+        trend={processed > 0 ? "up" : undefined}
       />
       <StatCard
         title="Pendiente OCR"

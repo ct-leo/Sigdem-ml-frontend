@@ -1,17 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { documentsService } from "../services/documents.service";
+import { DOCUMENTS_KEYS } from "../queryKeys/documents.keys";
 
-export const useDocument = (id: string) => {
+export const useDocument = (id: number) => {
   return useQuery({
-    queryKey: ["document", id],
-    queryFn: () => documentsService.getDocumentById(id),
-    enabled: !!id,
-  });
-};
-
-export const useDocumentStats = () => {
-  return useQuery({
-    queryKey: ["documentStats"],
-    queryFn: () => documentsService.getDocumentStats(),
+    queryKey: DOCUMENTS_KEYS.detail(id),
+    queryFn: () => documentsService.getDocument(id),
+    enabled: !!id && !isNaN(id),
   });
 };

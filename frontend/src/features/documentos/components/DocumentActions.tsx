@@ -2,9 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { MoreHorizontal, Download, Share2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
+import { useDownloadDocument } from "../hooks/useDownloadDocument";
 
 interface DocumentActionsProps {
-  documentId: string;
+  documentId: number;
   documentName: string;
 }
 
@@ -14,6 +15,7 @@ export const DocumentActions: React.FC<DocumentActionsProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const downloadMutation = useDownloadDocument();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -27,7 +29,7 @@ export const DocumentActions: React.FC<DocumentActionsProps> = ({
 
   const handleDownload = () => {
     setIsOpen(false);
-    toast.success(`Descarga iniciada: ${documentName}`);
+    downloadMutation.mutate({ id: documentId, nombre_original: documentName });
   };
 
   const handleShare = () => {
@@ -56,17 +58,18 @@ export const DocumentActions: React.FC<DocumentActionsProps> = ({
           >
             <button
               onClick={handleDownload}
-              className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              disabled={downloadMutation.isPending}
+              className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors disabled:opacity-55"
             >
               <Download className="w-4 h-4 text-text-secondary" />
-              Descargar
+              {downloadMutation.isPending ? "Descargando..." : "Descargar"}
             </button>
             <div className="border-t border-border-color my-1"></div>
             <button
               onClick={handleShare}
               className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors"
             >
-              <Share2 className="w-4 h-4 text-municipal-green" />
+              <Share2 className="w-4 h-4 text-[#749763]" />
               Compartir enlace
             </button>
           </motion.div>

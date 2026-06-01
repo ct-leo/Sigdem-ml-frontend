@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 interface Props {
-  tramiteId: string;
+  tramiteId: number;
 }
 
 export const TramiteActions: React.FC<Props> = ({ tramiteId }) => {
@@ -38,20 +38,35 @@ export const TramiteActions: React.FC<Props> = ({ tramiteId }) => {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-border-color overflow-hidden z-50 py-1"
+            className="absolute right-0 origin-bottom-right w-48 bg-white rounded-lg shadow-lg border border-border-color overflow-hidden z-50"
           >
             <button
-              onClick={() => navigate(`/tramites/${tramiteId}`)}
-              className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors"
+              onClick={() => {
+                setIsOpen(false);
+                navigate(`/tramites/${tramiteId}`);
+              }}
+              className="w-full px-4 py-2 text-left text-xs font-semibold text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors"
             >
-              <Eye className="w-4 h-4 text-text-secondary" />
+              <Eye className="w-4 h-4 text-navy-blue" />
               Ver detalle
             </button>
-            <button className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors">
-              <Edit className="w-4 h-4 text-text-secondary" />
-              Editar
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate(`/tramites/${tramiteId}/editar`);
+              }}
+              className="w-full px-4 py-2 text-left text-xs font-semibold text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors"
+            >
+              <Edit className="w-4 h-4 text-navy-blue" />
+              Editar Expediente
             </button>
-            <button className="w-full px-4 py-2 text-left text-sm text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors">
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                navigate(`/tramites/${tramiteId}`);
+              }}
+              className="w-full px-4 py-2 text-left text-xs font-semibold text-text-primary hover:bg-gray-50 flex items-center gap-2 transition-colors"
+            >
               <CheckCircle className="w-4 h-4 text-municipal-green" />
               Cambiar estado
             </button>

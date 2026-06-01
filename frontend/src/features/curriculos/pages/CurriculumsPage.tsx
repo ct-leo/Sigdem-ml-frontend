@@ -1,97 +1,174 @@
 import React, { useState, useMemo } from "react";
-import { PageHeader } from "../../../components/ui/PageHeader";
-import { CurriculumStatsCards } from "../components/CurriculumStatsCards";
-import { CurriculumsFilters } from "../components/CurriculumsFilters";
-import { CurriculumsSearch } from "../components/CurriculumsSearch";
-import { CurriculumsTable } from "../components/CurriculumsTable";
-import { useCurriculums, useCurriculumStats } from "../hooks/useCurriculums";
-import type { CurriculumsFiltersState } from "../components/CurriculumsFilters";
 import { motion } from "framer-motion";
+import { Plus } from "lucide-react";
+import { PageHeader } from "../../../components/ui/PageHeader";
+import { Button } from "../../../components/ui/Button";
+import { CVStatsCards } from "../components/CVStatsCards";
+import { CurriculumsSearch } from "../components/CurriculumsSearch";
+import { CVsTable } from "../components/CVsTable";
+import { UploadCVModal } from "../components/UploadCVModal";
+import { useCVs } from "../../cvs/hooks/useCVs";
+import { useJobs } from "../../rrhh/hooks/useJobs";
+import type { CVProcessedStatus } from "../../cvs/types/cv.types";
+import { Filter, X } from "lucide-react";
+
+interface CVFiltersState {
+  nlpStatus?: CVProcessedStatus | "";
+  jobId?: number | "";
+}
 
 export const CurriculumsPage: React.FC = () => {
-  const { data: curriculums, isLoading } = useCurriculums();
-  const { data: stats, isLoading: isLoadingStats } = useCurriculumStats();
-
   const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState<CurriculumsFiltersState>({});
+  const [filters, setFilters] = useState<CVFiltersState>({});
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
 
-  // Collect unique Convocatorias codes for filter dropdown
-  const uniqueConvocatoriasCodes = useMemo(() => {
-    if (!curriculums) return [];
-    return Array.from(new Set(curriculums.map((c) => c.codeAssociated).filter(Boolean)));
-  }, [curriculums]);
+  // Real data from backend
+  const { data: cvs, isLoading } = useCVs();
+  const { data: jobs } = useJobs();
 
-  const filteredCvs = useMemo(() => {
-    if (!curriculums) return [];
-    return curriculums.filter((cv) => {
-      // Global search match
-      const matchesSearch =
-        cv.candidateName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cv.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cv.jobTitleAssociated.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cv.codeAssociated.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cv.skills.some((s) => s.toLowerCase().includes(searchTerm.toLowerCase()));
-
-      const matchesStatus = filters.status ? cv.status === filters.status : true;
-      const matchesConvocatoria = filters.codeAssociated
-        ? cv.codeAssociated === filters.codeAssociated
-        : true;
-      const matchesAcademic = filters.academicLevel
-        ? cv.educations.some((edu) => edu.academicLevel.includes(filters.academicLevel || ""))
-        : true;
-      const matchesExperience = filters.experienceYears
-        ? cv.experienceYears >= Number(filters.experienceYears)
-        : true;
-
-      let matchesCompatibility = true;
-      if (filters.compatibilityLevel === "Excellent") {
-        matchesCompatibility = cv.compatibilityPercentage >= 90;
-      } else if (filters.compatibilityLevel === "Good") {
-        matchesCompatibility = cv.compatibilityPercentage >= 70 && cv.compatibilityPercentage < 90;
-      } else if (filters.compatibilityLevel === "Moderate") {
-        matchesCompatibility = cv.compatibilityPercentage < 70;
-      }
-
-      return (
-        matchesSearch &&
-        matchesStatus &&
-        matchesConvocatoria &&
-        matchesAcademic &&
-        matchesExperience &&
-        matchesCompatibility
-      );
+  // Build job title lookup map
+  const jobTitleMap = useMemo(() => {
+    const map: Record<number, string> = {};
+    jobs?.forEach((j) => {
+      map[j.id] = j.titulo;
     });
-  }, [curriculums, searchTerm, filters]);
+    return map;
+  }, [jobs]);
+
+  // Unique job IDs from loaded CVs for filter dropdown
+  const uniqueJobIds = useMemo(() => {
+    if (!cvs) return [];
+    return Array.from(new Set(cvs.map((c) => c.job_id)));
+  }, [cvs]);
+
+  // Apply filters & search client-side
+  const filteredCVs = useMemo(() => {
+    if (!cvs) return [];
+    return cvs.filter((cv) => {
+      const search = searchTerm.toLowerCase();
+      const matchesSearch =
+        !search ||
+        cv.nombre_candidato.toLowerCase().includes(search) ||
+        cv.correo_candidato.toLowerCase().includes(search) ||
+        cv.telefono_candidato.includes(search) ||
+        String(cv.job_id).includes(search) ||
+        (jobTitleMap[cv.job_id] ?? "").toLowerCase().includes(search);
+
+      const matchesNLP = filters.nlpStatus
+        ? cv.texto_procesado === filters.nlpStatus
+        : true;
+
+      const matchesJob = filters.jobId
+        ? cv.job_id === Number(filters.jobId)
+        : true;
+
+      return matchesSearch && matchesNLP && matchesJob;
+    });
+  }, [cvs, searchTerm, filters, jobTitleMap]);
+
+  const hasActiveFilters = !!filters.nlpStatus || !!filters.jobId;
+
+  const clearFilters = () => setFilters({ nlpStatus: "", jobId: "" });
 
   return (
     <div className="flex flex-col gap-6 pb-8 select-none">
       <PageHeader
-        title="Currículos"
-        description="Gestiona y analiza los perfiles profesionales procesados por el sistema."
+        title="Portal ATS — Currículos"
+        description="Gestiona los expedientes de candidatos, extrae información con NLP y da seguimiento al proceso de selección de personal."
+        actions={
+          <Button
+            onClick={() => setIsUploadOpen(true)}
+            className="gap-2 bg-navy-blue hover:bg-blue-900 text-white font-bold text-xs uppercase tracking-wider"
+          >
+            <Plus className="w-4.5 h-4.5" />
+            Cargar Currículo
+          </Button>
+        }
       />
 
-      {/* KPI Stats cards row */}
-      <CurriculumStatsCards stats={stats} isLoading={isLoadingStats} />
+      {/* KPI Stats */}
+      <CVStatsCards cvs={cvs} isLoading={isLoading} />
 
-      {/* Toolbar Search / Filter */}
+      {/* Search + Filters + Table */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="flex flex-col gap-4"
       >
+        {/* Toolbar */}
         <div className="bg-white p-4 rounded-xl border border-border-color shadow-sm flex flex-col xl:flex-row gap-4 items-center justify-between">
-          <CurriculumsSearch value={searchTerm} onChange={setSearchTerm} />
-          <CurriculumsFilters
-            filters={filters}
-            onFilterChange={setFilters}
-            convocatoriasCodes={uniqueConvocatoriasCodes}
+          <CurriculumsSearch
+            value={searchTerm}
+            onChange={setSearchTerm}
+            placeholder="Buscar por candidato, correo, convocatoria..."
           />
+
+          {/* Filters */}
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="flex items-center gap-1.5 text-sm font-medium text-text-secondary">
+              <Filter className="w-4 h-4" />
+              Filtros:
+            </div>
+
+            {/* NLP Status */}
+            <select
+              value={filters.nlpStatus || ""}
+              onChange={(e) =>
+                setFilters({ ...filters, nlpStatus: e.target.value as CVProcessedStatus | "" })
+              }
+              className="bg-white border border-border-color text-xs rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 cursor-pointer"
+            >
+              <option value="">Estado NLP (Todos)</option>
+              <option value="SI">Procesados</option>
+              <option value="NO">Pendientes</option>
+            </select>
+
+            {/* Convocatoria */}
+            <select
+              value={filters.jobId || ""}
+              onChange={(e) =>
+                setFilters({
+                  ...filters,
+                  jobId: e.target.value ? Number(e.target.value) : "",
+                })
+              }
+              className="bg-white border border-border-color text-xs rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 cursor-pointer max-w-[200px]"
+            >
+              <option value="">Convocatoria (Todas)</option>
+              {uniqueJobIds.map((jobId) => (
+                <option key={jobId} value={jobId}>
+                  CONV-{jobId}
+                  {jobTitleMap[jobId] ? ` — ${jobTitleMap[jobId].substring(0, 25)}` : ""}
+                </option>
+              ))}
+            </select>
+
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="text-xs text-text-secondary hover:text-danger flex items-center gap-1 transition-colors font-medium"
+              >
+                <X className="w-4 h-4" />
+                Limpiar
+              </button>
+            )}
+          </div>
         </div>
 
-        {/* List table */}
-        <CurriculumsTable curriculums={filteredCvs} isLoading={isLoading} />
+        {/* Table */}
+        <CVsTable
+          cvs={filteredCVs}
+          isLoading={isLoading}
+          getJobTitle={(jobId) => jobTitleMap[jobId] ?? `Convocatoria ${jobId}`}
+        />
       </motion.div>
+
+      {/* Upload Modal */}
+      <UploadCVModal
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+      />
     </div>
   );
 };

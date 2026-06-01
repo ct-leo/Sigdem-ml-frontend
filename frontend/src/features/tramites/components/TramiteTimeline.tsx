@@ -1,6 +1,6 @@
 import React from "react";
 import type { TramiteHistory } from "../types/tramite.types";
-import { CheckCircle, Clock, AlertTriangle, XCircle } from "lucide-react";
+import { CheckCircle, Clock, AlertTriangle, XCircle, UserCheck } from "lucide-react";
 import dayjs from "dayjs";
 import { motion } from "framer-motion";
 
@@ -9,30 +9,40 @@ interface Props {
 }
 
 export const TramiteTimeline: React.FC<Props> = ({ history }) => {
-  const getIcon = (status: string) => {
+  const getIcon = (status: string | null) => {
     switch (status) {
-      case 'Aprobado': return <CheckCircle className="w-5 h-5 text-dashboard-green" />;
-      case 'Rechazado': return <XCircle className="w-5 h-5 text-danger" />;
-      case 'Observado': return <AlertTriangle className="w-5 h-5 text-warning" />;
-      case 'En Revisión': return <Clock className="w-5 h-5 text-navy-blue" />;
-      case 'Registrado':
-      default: return <CheckCircle className="w-5 h-5 text-text-secondary" />;
+      case 'APROBADO': return <CheckCircle className="w-5 h-5 text-dashboard-green" />;
+      case 'RECHAZADO': return <XCircle className="w-5 h-5 text-danger" />;
+      case 'OBSERVADO': return <AlertTriangle className="w-5 h-5 text-warning" />;
+      case 'EN_REVISION': return <Clock className="w-5 h-5 text-navy-blue" />;
+      case 'FINALIZADO': return <CheckCircle className="w-5 h-5 text-slate-700" />;
+      case 'REGISTRADO':
+      default: return <UserCheck className="w-5 h-5 text-text-secondary" />;
     }
   };
 
-  const getBgColor = (status: string) => {
+  const getBgColor = (status: string | null) => {
     switch (status) {
-      case 'Aprobado': return 'bg-dashboard-green/10';
-      case 'Rechazado': return 'bg-danger/10';
-      case 'Observado': return 'bg-warning/10';
-      case 'En Revisión': return 'bg-navy-blue/10';
-      case 'Registrado':
+      case 'APROBADO': return 'bg-dashboard-green/10';
+      case 'RECHAZADO': return 'bg-danger/10';
+      case 'OBSERVADO': return 'bg-warning/10';
+      case 'EN_REVISION': return 'bg-navy-blue/10';
+      case 'FINALIZADO': return 'bg-slate-100';
+      case 'REGISTRADO':
       default: return 'bg-gray-100';
     }
   };
 
+  if (!history || history.length === 0) {
+    return (
+      <div className="text-center p-6 text-xs text-text-secondary font-semibold">
+        No hay registros históricos en la bitácora de este trámite.
+      </div>
+    );
+  }
+
   return (
-    <div className="relative pl-4 border-l border-border-color ml-4 space-y-8">
+    <div className="relative pl-4 border-l border-border-color ml-4 space-y-8 select-none">
       {history.map((event, index) => (
         <motion.div 
           initial={{ opacity: 0, x: -10 }}
@@ -41,19 +51,19 @@ export const TramiteTimeline: React.FC<Props> = ({ history }) => {
           key={event.id} 
           className="relative"
         >
-          <div className={`absolute -left-8 p-1 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center ${getBgColor(event.status)}`}>
-            {getIcon(event.status)}
+          <div className={`absolute -left-8 p-1 rounded-full bg-white border-2 border-white shadow-sm flex items-center justify-center ${getBgColor(event.estado_nuevo)}`}>
+            {getIcon(event.estado_nuevo)}
           </div>
           <div className="pl-4">
-            <h4 className="text-sm font-semibold text-text-primary">{event.action}</h4>
-            <div className="flex items-center text-xs text-text-secondary mt-1 gap-2">
-              <span>{dayjs(event.timestamp).format("DD MMM YYYY, HH:mm")}</span>
+            <h4 className="text-sm font-extrabold text-text-primary">{event.accion}</h4>
+            <div className="flex items-center text-[10px] text-text-secondary mt-1 gap-2">
+              <span>{dayjs(event.fecha).format("DD MMM YYYY, HH:mm")}</span>
               <span>•</span>
-              <span className="font-medium">{event.user}</span>
+              <span className="font-bold">Usuario ID: {event.usuario_id}</span>
             </div>
-            {event.details && (
-              <p className="text-sm text-text-secondary mt-2 bg-light-bg p-3 rounded-lg border border-border-color/50">
-                {event.details}
+            {event.comentario && (
+              <p className="text-xs text-text-secondary mt-2 bg-light-bg p-3 rounded-lg border border-border-color/50 leading-relaxed font-semibold">
+                {event.comentario}
               </p>
             )}
           </div>

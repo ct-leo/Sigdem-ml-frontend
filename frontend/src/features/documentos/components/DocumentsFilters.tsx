@@ -1,11 +1,12 @@
 import React from "react";
 import { Filter, X } from "lucide-react";
-import type { DocumentType, OCRStatus } from "../types/document.types";
+import type { OCRStatus } from "../types/document.types";
+import { useTramites } from "../../tramites/hooks/useTramites";
 
 export interface DocumentsFiltersState {
-  type?: DocumentType | "";
-  statusOcr?: OCRStatus | "";
-  responsibleArea?: string;
+  tipo_archivo?: string;
+  ocr_procesado?: OCRStatus | "";
+  tramite_id?: number | "";
 }
 
 interface DocumentsFiltersProps {
@@ -17,20 +18,14 @@ export const DocumentsFilters: React.FC<DocumentsFiltersProps> = ({
   filters,
   onFilterChange,
 }) => {
-  const hasActiveFilters = filters.type || filters.statusOcr || filters.responsibleArea;
+  const { data: tramites } = useTramites();
+  const hasActiveFilters = filters.tipo_archivo || filters.ocr_procesado || filters.tramite_id;
 
   const clearFilters = () => {
-    onFilterChange({ type: "", statusOcr: "", responsibleArea: "" });
+    onFilterChange({ tipo_archivo: "", ocr_procesado: "", tramite_id: "" });
   };
 
-  const areas = [
-    "Desarrollo Económico",
-    "Desarrollo Urbano",
-    "Seguridad Ciudadana",
-    "Gestión del Riesgo",
-    "Administración Tributaria",
-    "Servicios a la Ciudad",
-  ];
+  const fileTypes = ["pdf", "docx", "doc", "png", "jpg", "jpeg"];
 
   return (
     <div className="flex flex-wrap gap-3 items-center">
@@ -39,46 +34,45 @@ export const DocumentsFilters: React.FC<DocumentsFiltersProps> = ({
         Filtros:
       </div>
 
+      {/* Formatos select */}
       <select
-        value={filters.type || ""}
+        value={filters.tipo_archivo || ""}
         onChange={(e) =>
-          onFilterChange({ ...filters, type: e.target.value as DocumentType })
+          onFilterChange({ ...filters, tipo_archivo: e.target.value })
         }
-        className="bg-white border border-border-color text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer"
+        className="bg-white border border-border-color text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer text-xs font-semibold text-text-primary"
       >
-        <option value="">Formatos (Todos)</option>
-        <option value="PDF">PDF</option>
-        <option value="DOCX">DOCX</option>
-        <option value="PNG">PNG</option>
-        <option value="JPG">JPG</option>
-        <option value="XLSX">XLSX</option>
+        <option value="">Formato (Todos)</option>
+        {fileTypes.map(ft => (
+          <option key={ft} value={ft}>{ft.toUpperCase()}</option>
+        ))}
       </select>
 
+      {/* OCR Select */}
       <select
-        value={filters.statusOcr || ""}
+        value={filters.ocr_procesado || ""}
         onChange={(e) =>
-          onFilterChange({ ...filters, statusOcr: e.target.value as OCRStatus })
+          onFilterChange({ ...filters, ocr_procesado: e.target.value as OCRStatus })
         }
-        className="bg-white border border-border-color text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer"
+        className="bg-white border border-border-color text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer text-xs font-semibold text-text-primary"
       >
         <option value="">OCR (Todos)</option>
-        <option value="Procesado">Procesado</option>
-        <option value="Pendiente">Pendiente</option>
-        <option value="En Proceso">En Proceso</option>
-        <option value="Error">Error</option>
+        <option value="SI">Procesado</option>
+        <option value="NO">Pendiente</option>
       </select>
 
+      {/* Tramite Dropdown Select */}
       <select
-        value={filters.responsibleArea || ""}
+        value={filters.tramite_id || ""}
         onChange={(e) =>
-          onFilterChange({ ...filters, responsibleArea: e.target.value })
+          onFilterChange({ ...filters, tramite_id: e.target.value ? Number(e.target.value) : "" })
         }
-        className="bg-white border border-border-color text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer"
+        className="bg-white border border-border-color text-sm rounded-lg py-2 px-3 focus:outline-none focus:ring-2 focus:ring-navy-blue/20 hover:border-gray-300 transition-colors cursor-pointer text-xs font-semibold text-text-primary max-w-[200px] truncate"
       >
-        <option value="">Áreas (Todas)</option>
-        {areas.map((a) => (
-          <option key={a} value={a}>
-            {a}
+        <option value="">Trámite (Todos)</option>
+        {tramites?.map((t) => (
+          <option key={t.id} value={t.id}>
+            [{t.codigo}] {t.tipo_tramite}
           </option>
         ))}
       </select>
@@ -86,7 +80,7 @@ export const DocumentsFilters: React.FC<DocumentsFiltersProps> = ({
       {hasActiveFilters && (
         <button
           onClick={clearFilters}
-          className="text-sm text-text-secondary hover:text-danger flex items-center transition-colors font-medium ml-1"
+          className="text-xs text-text-secondary hover:text-danger flex items-center transition-colors font-bold ml-1 uppercase tracking-wider"
         >
           <X className="w-4 h-4 mr-1" />
           Limpiar

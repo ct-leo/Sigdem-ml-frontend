@@ -1,7 +1,7 @@
 import React from "react";
 import { Badge } from "../../../components/ui/Badge";
 import type { OCRStatus } from "../types/document.types";
-import { CheckCircle2, Clock, PlayCircle, AlertCircle } from "lucide-react";
+import { CheckCircle2, Clock } from "lucide-react";
 
 interface OCRStatusBadgeProps {
   status: OCRStatus;
@@ -9,32 +9,22 @@ interface OCRStatusBadgeProps {
 
 export const OCRStatusBadge: React.FC<OCRStatusBadgeProps> = ({ status }) => {
   const config = {
-    Procesado: {
+    SI: {
       variant: "success" as const,
       icon: CheckCircle2,
-      label: "OCR Procesado",
+      label: "Procesado",
     },
-    Pendiente: {
+    NO: {
       variant: "warning" as const,
       icon: Clock,
-      label: "OCR Pendiente",
-    },
-    "En Proceso": {
-      variant: "info" as const,
-      icon: PlayCircle,
-      label: "OCR En Proceso",
-    },
-    Error: {
-      variant: "danger" as const,
-      icon: AlertCircle,
-      label: "OCR Error",
+      label: "Pendiente",
     },
   };
 
   const { variant, icon: Icon, label } = config[status] || {
     variant: "default" as const,
     icon: Clock,
-    label: status,
+    label: status === "SI" ? "Procesado" : "Pendiente",
   };
 
   return (

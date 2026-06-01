@@ -13,14 +13,14 @@ interface JobsTableProps {
   isLoading: boolean;
 }
 
-type SortField = "title" | "publishedAt" | "vacancies" | "applications";
+type SortField = "titulo" | "fecha_creacion" | "id";
 type SortOrder = "asc" | "desc";
 
 export const JobsTable: React.FC<JobsTableProps> = ({ jobs, isLoading }) => {
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [sortField, setSortField] = useState<SortField>("publishedAt");
+  const [sortField, setSortField] = useState<SortField>("fecha_creacion");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
   const handleSort = (field: SortField) => {
@@ -35,14 +35,12 @@ export const JobsTable: React.FC<JobsTableProps> = ({ jobs, isLoading }) => {
   const sortedJobs = useMemo(() => {
     return [...jobs].sort((a, b) => {
       let comparison = 0;
-      if (sortField === "title") {
-        comparison = a.title.localeCompare(b.title);
-      } else if (sortField === "publishedAt") {
-        comparison = dayjs(a.publishedAt).isAfter(dayjs(b.publishedAt)) ? 1 : -1;
-      } else if (sortField === "vacancies") {
-        comparison = a.vacancies - b.vacancies;
-      } else if (sortField === "applications") {
-        comparison = a.totalApplicationsCount - b.totalApplicationsCount;
+      if (sortField === "titulo") {
+        comparison = a.titulo.localeCompare(b.titulo);
+      } else if (sortField === "fecha_creacion") {
+        comparison = dayjs(a.fecha_creacion).isAfter(dayjs(b.fecha_creacion)) ? 1 : -1;
+      } else if (sortField === "id") {
+        comparison = a.id - b.id;
       }
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -94,39 +92,24 @@ export const JobsTable: React.FC<JobsTableProps> = ({ jobs, isLoading }) => {
             <tr>
               <th className="px-6 py-4">
                 <button
-                  onClick={() => handleSort("title")}
+                  onClick={() => handleSort("titulo")}
                   className="flex items-center cursor-pointer hover:text-navy-blue transition-colors font-semibold uppercase text-[10px] tracking-wider"
                 >
                   Convocatoria <ChevronsUpDown className="w-3 h-3 ml-1 opacity-50" />
                 </button>
               </th>
-              <th className="px-6 py-4">Área Responsable</th>
+              <th className="px-6 py-4">Área</th>
+              <th className="px-6 py-4">Modalidad</th>
+              <th className="px-6 py-4">Ubicación</th>
               <th className="px-6 py-4">
                 <button
-                  onClick={() => handleSort("publishedAt")}
+                  onClick={() => handleSort("fecha_creacion")}
                   className="flex items-center cursor-pointer hover:text-navy-blue transition-colors font-semibold uppercase text-[10px] tracking-wider"
                 >
                   F. Publicación <ChevronsUpDown className="w-3 h-3 ml-1 opacity-50" />
                 </button>
               </th>
-              <th className="px-6 py-4">F. Cierre</th>
               <th className="px-6 py-4">Estado</th>
-              <th className="px-6 py-4">
-                <button
-                  onClick={() => handleSort("vacancies")}
-                  className="flex items-center cursor-pointer hover:text-navy-blue transition-colors font-semibold uppercase text-[10px] tracking-wider"
-                >
-                  Vacantes <ChevronsUpDown className="w-3 h-3 ml-1 opacity-50" />
-                </button>
-              </th>
-              <th className="px-6 py-4">
-                <button
-                  onClick={() => handleSort("applications")}
-                  className="flex items-center cursor-pointer hover:text-navy-blue transition-colors font-semibold uppercase text-[10px] tracking-wider"
-                >
-                  Postulantes <ChevronsUpDown className="w-3 h-3 ml-1 opacity-50" />
-                </button>
-              </th>
               <th className="px-6 py-4 text-center">Acciones</th>
             </tr>
           </thead>
@@ -150,31 +133,28 @@ export const JobsTable: React.FC<JobsTableProps> = ({ jobs, isLoading }) => {
                         onClick={() => navigate(`/convocatorias/${job.id}`)}
                         className="font-semibold text-text-primary hover:text-navy-blue transition-colors text-left truncate group-hover:underline"
                       >
-                        {job.title}
+                        {job.titulo}
                       </button>
                       <span className="text-xs text-text-secondary truncate">
-                        {job.code}
+                        CONV-{job.id}
                       </span>
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-text-primary font-medium">
+                <td className="px-6 py-4 text-text-primary font-medium text-xs">
                   {job.area}
                 </td>
-                <td className="px-6 py-4 text-text-secondary font-medium">
-                  {dayjs(job.publishedAt).format("DD/MM/YYYY")}
+                <td className="px-6 py-4 text-text-secondary font-medium text-xs">
+                  {job.modalidad}
                 </td>
-                <td className="px-6 py-4 text-text-secondary font-medium">
-                  {dayjs(job.closedAt).format("DD/MM/YYYY")}
+                <td className="px-6 py-4 text-text-secondary font-medium text-xs">
+                  {job.ubicacion}
+                </td>
+                <td className="px-6 py-4 text-text-secondary font-medium text-xs">
+                  {dayjs(job.fecha_creacion).format("DD/MM/YYYY")}
                 </td>
                 <td className="px-6 py-4">
-                  <JobStatusBadge status={job.status} />
-                </td>
-                <td className="px-6 py-4 font-mono font-bold text-center text-text-primary">
-                  {job.vacancies}
-                </td>
-                <td className="px-6 py-4 font-mono font-bold text-center text-dashboard-green">
-                  {job.totalApplicationsCount}
+                  <JobStatusBadge status={job.estado} />
                 </td>
                 <td
                   className="px-6 py-4 text-center"

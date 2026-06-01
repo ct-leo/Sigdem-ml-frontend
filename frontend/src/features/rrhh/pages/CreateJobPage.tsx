@@ -2,7 +2,7 @@ import React from "react";
 import { PageHeader } from "../../../components/ui/PageHeader";
 import { JobForm } from "../components/JobForm";
 import { useCreateJob } from "../hooks/useCreateJob";
-import type { JobFormData } from "../schemas/job.schema";
+import type { JobFormValues } from "../schemas/job.schema";
 import { Button } from "../../../components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -12,7 +12,7 @@ export const CreateJobPage: React.FC = () => {
   const navigate = useNavigate();
   const createMutation = useCreateJob();
 
-  const handleFormSubmit = async (data: JobFormData) => {
+  const handleFormSubmit = async (data: JobFormValues) => {
     const result = await alerts.confirmAction(
       "Confirmar Convocatoria",
       "¿Desea registrar esta nueva convocatoria laboral?",
@@ -21,13 +21,12 @@ export const CreateJobPage: React.FC = () => {
     );
     if (!result.isConfirmed) return;
 
-    try {
-      await createMutation.mutateAsync(data);
-      await alerts.success("Convocatoria Creada", "La oferta de empleo ha sido registrada correctamente.");
-      navigate("/convocatorias");
-    } catch (err: any) {
-      alerts.error("Error", err.message || "Error al registrar la convocatoria");
-    }
+    createMutation.mutate(data, {
+      onSuccess: () => {
+        alerts.success("Convocatoria Creada", "La oferta de empleo ha sido registrada correctamente.");
+        navigate("/convocatorias");
+      }
+    });
   };
 
   return (
@@ -39,10 +38,10 @@ export const CreateJobPage: React.FC = () => {
           <Button
             onClick={() => navigate("/convocatorias")}
             variant="default"
-            className="gap-2 border border-border-color bg-white hover:bg-gray-50 text-text-primary"
+            className="gap-2 border border-border-color bg-white hover:bg-gray-50 text-text-primary font-bold text-xs uppercase tracking-wider"
           >
             <ArrowLeft className="w-4 h-4" />
-            Volver a Convocatorias
+            Volver
           </Button>
         }
       />

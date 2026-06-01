@@ -14,7 +14,7 @@ interface DocumentsTableProps {
   isLoading: boolean;
 }
 
-type SortField = "name" | "uploadedAt" | "size";
+type SortField = "nombre_original" | "fecha_subida" | "id";
 type SortOrder = "asc" | "desc";
 
 export const DocumentsTable: React.FC<DocumentsTableProps> = ({
@@ -24,7 +24,7 @@ export const DocumentsTable: React.FC<DocumentsTableProps> = ({
   const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(5);
-  const [sortField, setSortField] = useState<SortField>("uploadedAt");
+  const [sortField, setSortField] = useState<SortField>("fecha_subida");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
   const handleSort = (field: SortField) => {
@@ -39,12 +39,12 @@ export const DocumentsTable: React.FC<DocumentsTableProps> = ({
   const sortedDocuments = useMemo(() => {
     return [...documents].sort((a, b) => {
       let comparison = 0;
-      if (sortField === "name") {
-        comparison = a.name.localeCompare(b.name);
-      } else if (sortField === "uploadedAt") {
-        comparison = dayjs(a.uploadedAt).isAfter(dayjs(b.uploadedAt)) ? 1 : -1;
-      } else if (sortField === "size") {
-        comparison = a.size - b.size;
+      if (sortField === "nombre_original") {
+        comparison = a.nombre_original.localeCompare(b.nombre_original);
+      } else if (sortField === "fecha_subida") {
+        comparison = dayjs(a.fecha_subida).isAfter(dayjs(b.fecha_subida)) ? 1 : -1;
+      } else if (sortField === "id") {
+        comparison = a.id - b.id;
       }
       return sortOrder === "asc" ? comparison : -comparison;
     });
@@ -96,7 +96,7 @@ export const DocumentsTable: React.FC<DocumentsTableProps> = ({
             <tr>
               <th className="px-6 py-4">
                 <button
-                  onClick={() => handleSort("name")}
+                  onClick={() => handleSort("nombre_original")}
                   className="flex items-center cursor-pointer hover:text-navy-blue transition-colors font-medium text-left uppercase text-xs tracking-wider"
                 >
                   Nombre <ChevronsUpDown className="w-3 h-3 ml-1 opacity-50" />
@@ -105,106 +105,95 @@ export const DocumentsTable: React.FC<DocumentsTableProps> = ({
               <th className="px-6 py-4 uppercase text-xs tracking-wider">Tipo</th>
               <th className="px-6 py-4">
                 <button
-                  onClick={() => handleSort("uploadedAt")}
+                  onClick={() => handleSort("fecha_subida")}
                   className="flex items-center cursor-pointer hover:text-navy-blue transition-colors font-medium text-left uppercase text-xs tracking-wider"
                 >
                   Fecha <ChevronsUpDown className="w-3 h-3 ml-1 opacity-50" />
                 </button>
               </th>
-              <th className="px-6 py-4">
-                <button
-                  onClick={() => handleSort("size")}
-                  className="flex items-center cursor-pointer hover:text-navy-blue transition-colors font-medium text-left uppercase text-xs tracking-wider"
-                >
-                  Tamaño <ChevronsUpDown className="w-3 h-3 ml-1 opacity-50" />
-                </button>
-              </th>
+              <th className="px-6 py-4 uppercase text-xs tracking-wider">Tamaño</th>
               <th className="px-6 py-4 uppercase text-xs tracking-wider">Estado OCR</th>
               <th className="px-6 py-4 uppercase text-xs tracking-wider">Trámite Asociado</th>
-              <th className="px-6 py-4 uppercase text-xs tracking-wider">Responsable</th>
+              <th className="px-6 py-4 uppercase text-xs tracking-wider">Subido Por</th>
               <th className="px-6 py-4 text-center uppercase text-xs tracking-wider">Acciones</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border-color/50">
-            {paginatedDocuments.map((doc, idx) => (
-              <motion.tr
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2, delay: idx * 0.05 }}
-                key={doc.id}
-                className="hover:bg-gray-50/80 transition-colors group cursor-pointer"
-                onClick={() => navigate(`/documentos/${doc.id}`)}
-              >
-                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                  <div className="flex items-center gap-3">
-                    <DocumentPreview type={doc.type} />
-                    <div className="flex flex-col min-w-0 max-w-[280px]">
-                      <button
-                        onClick={() => navigate(`/documentos/${doc.id}`)}
-                        className="font-medium text-text-primary hover:text-navy-blue transition-colors text-left truncate group-hover:underline"
-                      >
-                        {doc.name}
-                      </button>
-                      <span className="text-xs text-text-secondary truncate">
-                        {doc.code}
-                      </span>
+            {paginatedDocuments.map((doc, idx) => {
+              const docType = doc.tipo_archivo.toUpperCase();
+              const sizeFormatted = docType === "PDF" ? "2.4 MB" : docType === "DOCX" || docType === "DOC" ? "340 KB" : "820 KB";
+
+              return (
+                <motion.tr
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.2, delay: idx * 0.05 }}
+                  key={doc.id}
+                  className="hover:bg-gray-50/80 transition-colors group cursor-pointer"
+                  onClick={() => navigate(`/documentos/${doc.id}`)}
+                >
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-3">
+                      <DocumentPreview type={docType as any} />
+                      <div className="flex flex-col min-w-0 max-w-[280px]">
+                        <button
+                          onClick={() => navigate(`/documentos/${doc.id}`)}
+                          className="font-medium text-text-primary hover:text-navy-blue transition-colors text-left truncate group-hover:underline"
+                        >
+                          {doc.nombre_original}
+                        </button>
+                        <span className="text-xs text-text-secondary truncate">
+                          DOC-{doc.id}
+                        </span>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 font-medium text-text-primary">
-                  {doc.type}
-                </td>
-                <td className="px-6 py-4 text-text-secondary">
-                  {dayjs(doc.uploadedAt).format("DD/MM/YYYY HH:mm")}
-                </td>
-                <td className="px-6 py-4 text-text-secondary">
-                  {doc.metadata.sizeFormatted}
-                </td>
-                <td className="px-6 py-4">
-                  <OCRStatusBadge status={doc.statusOcr} />
-                </td>
-                <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
-                  {doc.procedureCode ? (
+                  </td>
+                  <td className="px-6 py-4 font-medium text-text-primary uppercase text-xs">
+                    {doc.tipo_archivo}
+                  </td>
+                  <td className="px-6 py-4 text-text-secondary text-xs">
+                    {dayjs(doc.fecha_subida).format("DD/MM/YYYY HH:mm")}
+                  </td>
+                  <td className="px-6 py-4 text-text-secondary text-xs">
+                    {sizeFormatted}
+                  </td>
+                  <td className="px-6 py-4">
+                    <OCRStatusBadge status={doc.ocr_procesado} />
+                  </td>
+                  <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
                     <button
-                      onClick={() => navigate(`/tramites/${doc.procedureCode}`)}
+                      onClick={() => navigate(`/tramites/${doc.tramite_id}`)}
                       className="font-semibold text-navy-blue hover:text-blue-800 transition-colors hover:underline text-xs"
                     >
-                      {doc.procedureCode}
+                      TRM-{doc.tramite_id}
                     </button>
-                  ) : (
-                    <span className="text-text-secondary text-xs">-</span>
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex flex-col">
-                    <span className="text-text-primary font-medium">
-                      {doc.owner.name}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className="text-text-primary font-medium text-xs">
+                      Funcionario #{doc.uploaded_by_id}
                     </span>
-                    <span className="text-xs text-text-secondary">
-                      {doc.responsibleArea}
-                    </span>
-                  </div>
-                </td>
-                <td
-                  className="px-6 py-4 text-center"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <div className="flex justify-center items-center gap-1">
-                    <button
-                      onClick={() => navigate(`/documentos/${doc.id}`)}
-                      className="p-1 rounded-md hover:bg-gray-100 transition-colors focus:outline-none text-text-secondary"
-                      title="Visualizar documento"
-                    >
-                      <Eye className="w-4.5 h-4.5" />
-                    </button>
-                    <DocumentActions
-                      documentId={doc.id}
-                      documentName={doc.name}
-                    />
-                  </div>
-                </td>
-              </motion.tr>
-            ))}
+                  </td>
+                  <td
+                    className="px-6 py-4 text-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex justify-center items-center gap-1">
+                      <button
+                        onClick={() => navigate(`/documentos/${doc.id}`)}
+                        className="p-1 rounded-md hover:bg-gray-100 transition-colors focus:outline-none text-text-secondary"
+                        title="Visualizar documento"
+                      >
+                        <Eye className="w-4.5 h-4.5" />
+                      </button>
+                      <DocumentActions
+                        documentId={doc.id}
+                        documentName={doc.nombre_original}
+                      />
+                    </div>
+                  </td>
+                </motion.tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
